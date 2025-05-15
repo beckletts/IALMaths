@@ -29,12 +29,12 @@ function ResultPanel({ result }) {
   
   const getHeaderColor = () => {
     if (result.eligible) {
-      return 'bg-[#00B2A9]';
+      return 'bg-[#059669]'; // Green with better contrast
     } else if (result.qualification) {
-      // Partially eligible
-      return 'bg-[#FFD700]';
+      // Partially eligible - amber with better contrast
+      return 'bg-[#F59E0B]';
     } else {
-      return 'bg-amber-500';
+      return 'bg-[#DC2626]'; // Red with better contrast
     }
   };
   
@@ -47,12 +47,20 @@ function ResultPanel({ result }) {
       return 'Not Eligible';
     }
   };
+
+  // Helper function for text color based on background
+  const getTextColor = () => {
+    if (result.qualification) {
+      return 'text-black'; // Black text on amber background for better contrast
+    } 
+    return 'text-white'; // White text on green or red
+  };
   
   return (
     <div className={`fixed top-5 right-5 z-50 bg-white rounded-lg shadow-lg transition-all duration-300 ${
       isCollapsed ? 'w-14 h-14' : 'w-80'
     }`}>
-      <div className={`${getHeaderColor()} text-white p-3 rounded-t-lg flex justify-between items-center`}>
+      <div className={`${getHeaderColor()} ${getTextColor()} p-3 rounded-t-lg flex justify-between items-center`}>
         <h3 className={`font-medium text-sm ${isCollapsed ? 'hidden' : ''}`}>
           {getStatusIcon()} {getHeaderTitle()}
         </h3>
@@ -75,23 +83,23 @@ function ResultPanel({ result }) {
       
       {!isCollapsed && (
         <div className="p-3 max-h-48 overflow-y-auto">
-          <p className="text-sm mb-2">{result.message}</p>
+          <p className="text-sm mb-2 text-gray-900">{result.message}</p>
           
           {result.alternativeMessage && (
-            <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-700">
+            <div className="mt-2 p-2 bg-gray-100 rounded text-xs text-gray-900 border border-gray-300">
               <p>{result.alternativeMessage}</p>
             </div>
           )}
           
           {(result.eligible || result.qualification) && (
-            <div className="mt-3 text-xs text-gray-600 border-t border-gray-200 pt-2">
+            <div className="mt-3 text-xs text-gray-700 border-t border-gray-300 pt-2">
               <p>Remember to check with your examination officer for the final verification of your eligibility.</p>
             </div>
           )}
           
           <button 
             onClick={() => setIsVisible(false)}
-            className="mt-3 w-full text-xs text-gray-500 hover:text-gray-700 text-center"
+            className="mt-3 w-full text-xs bg-gray-200 hover:bg-gray-300 text-gray-800 py-1 px-2 rounded transition-colors"
           >
             Dismiss
           </button>
