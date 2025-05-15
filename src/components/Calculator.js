@@ -52,9 +52,18 @@ function Calculator({
   const checkStandardEligibility = () => {
     // Check Pure Mathematics eligibility
     const pureUnits = ["P1", "P2", "P3", "P4"];
+    const selectedPureUnits = pureUnits.filter(unit => selectedUnits.includes(unit));
     const hasPureComplete = pureUnits.every(unit => selectedUnits.includes(unit));
+    
+    // Check for AS Level eligibility (P1, P2 and one applied)
+    const hasP1P2 = ["P1", "P2"].every(unit => selectedUnits.includes(unit));
+    
+    // Count applied units
+    const appliedUnits = ["S1", "S2", "S3", "M1", "M2", "M3", "D1"].filter(unit => 
+      selectedUnits.includes(unit)
+    );
 
-    // Check for valid applied pairs
+    // Check for valid applied pairs for IAL
     const validPairs = [
       ["S1", "S2"], ["M1", "M2"], ["S1", "M1"], 
       ["S1", "D1"], ["M1", "D1"]
@@ -63,18 +72,66 @@ function Calculator({
       pair.every(unit => selectedUnits.includes(unit))
     );
 
+    // Check if user is eligible for IAS Mathematics
+    const isEligibleForIAS = hasP1P2 && appliedUnits.length >= 1;
+
+    if (!hasPureComplete && isEligibleForIAS) {
+      setResult({
+        eligible: true,
+        message: "You are eligible for the IAS Mathematics qualification (XMA01), but not for the full IAL Mathematics (YMA01).",
+        qualification: "IAS Mathematics (XMA01)",
+        alternativeMessage: "To be eligible for IAL Mathematics (YMA01), you need to complete all Pure units (P1-P4) and have a valid applied pair."
+      });
+      return;
+    }
+
     if (!hasPureComplete) {
+      let message = "Missing one or more required Pure Mathematics units (P1-P4)";
+      
+      // If they have some pure units, be more specific
+      if (selectedPureUnits.length > 0) {
+        const missingUnits = pureUnits.filter(unit => !selectedUnits.includes(unit));
+        message = `Missing ${missingUnits.join(", ")} from the required Pure Mathematics units`;
+      }
+      
+      // Add recommendations if they're close to IAS
+      if (selectedPureUnits.length >= 1) {
+        const neededForIAS = [];
+        if (!selectedUnits.includes("P1")) neededForIAS.push("P1");
+        if (!selectedUnits.includes("P2")) neededForIAS.push("P2");
+        if (appliedUnits.length === 0) neededForIAS.push("one applied unit");
+        
+        message += `. You could aim for IAS Mathematics (XMA01) by adding ${neededForIAS.join(" and ")}.`;
+      }
+      
       setResult({
         eligible: false,
-        message: "Missing one or more required Pure Mathematics units (P1-P4)"
+        message: message
       });
       return;
     }
 
     if (!hasValidPair) {
+      // Construct helpful message about what pairs they could add
+      let message = "Missing a valid applied pair. You need one of: ";
+      const possiblePairs = [];
+      
+      validPairs.forEach(pair => {
+        const havePair = pair.filter(unit => selectedUnits.includes(unit));
+        const missingFromPair = pair.filter(unit => !selectedUnits.includes(unit));
+        
+        if (havePair.length === 1) {
+          possiblePairs.push(`${havePair[0]}+${missingFromPair[0]}`);
+        } else if (havePair.length === 0) {
+          possiblePairs.push(`${pair[0]}+${pair[1]}`);
+        }
+      });
+      
+      message += possiblePairs.join(", ");
+      
       setResult({
         eligible: false,
-        message: "Missing a valid applied pair"
+        message: message
       });
       return;
     }
@@ -88,6 +145,7 @@ function Calculator({
   const checkDualEligibility = () => {
     // Check Pure Mathematics eligibility for IAL
     const pureUnits = ["P1", "P2", "P3", "P4"];
+    const missingPureUnits = pureUnits.filter(unit => !selectedUnits.includes(unit)); 
     const hasPureComplete = pureUnits.every(unit => selectedUnits.includes(unit));
     
     // Check for valid applied pairs for IAL
@@ -108,22 +166,52 @@ function Calculator({
     ).length;
     
     // Count all applied units that aren't used in the IAL requirement
-    const unusedAppliedUnits = ["S1", "S2", "S3", "M1", "M2", "M3", "D1"].filter(unit => 
+    const appliedUnits = ["S1", "S2", "S3", "M1", "M2", "M3", "D1"].filter(unit => 
       selectedUnits.includes(unit)
-    ).length - 2; // Subtract 2 for the IAL applied pair
+    );
+    
+    const unusedAppliedUnits = Math.max(0, appliedUnits.length - 2); // Subtract 2 for the IAL applied pair
 
-    if (!hasPureComplete) {
+    // Check if eligible for IAS Mathematics alone
+    const hasP1P2 = ["P1", "P2"].every(unit => selectedUnits.includes(unit));
+    const isEligibleForIAS = hasP1P2 && appliedUnits.length >= 1;
+
+    if (!hasPureComplete && !hasFP1) {
+      // Neither IAL Math nor IAS Further Math requirements met
+      let message = "Missing required Pure Mathematics units (P1-P4) for IAL Mathematics and FP1 for IAS Further Mathematics";
+      
+      if (isEligibleForIAS) {
+        message = "You are eligible for IAS Mathematics (XMA01) only. To qualify for dual qualifications, you need all Pure units (P1-P4) and FP1 plus additional units.";
+      }
+      
       setResult({
         eligible: false,
-        message: "Missing required Pure Mathematics units (P1-P4) for IAL Mathematics"
+        message: message
+      });
+      return;
+    }
+
+    if (!hasPureComplete) {
+      const missingUnits = pureUnits.filter(unit => !selectedUnits.includes(unit));
+      let message = `Missing ${missingUnits.join(", ")} from the required Pure Mathematics units for IAL Mathematics. `;
+      
+      if (hasFP1) {
+        message += "You may still be eligible for IAS Further Mathematics if you add more units.";
+      }
+      
+      setResult({
+        eligible: false,
+        message: message
       });
       return;
     }
 
     if (!hasValidPair) {
+      let message = "Missing a valid applied pair for IAL Mathematics. You need one of: S1+S2, M1+M2, S1+M1, S1+D1, or M1+D1";
+      
       setResult({
         eligible: false,
-        message: "Missing a valid applied pair for IAL Mathematics"
+        message: message
       });
       return;
     }
@@ -131,7 +219,7 @@ function Calculator({
     if (!hasFP1) {
       setResult({
         eligible: false,
-        message: "FP1 is required for IAS Further Mathematics"
+        message: "FP1 is required for IAS Further Mathematics. You qualify for IAL Mathematics (YMA01) but not for the Further Mathematics component."
       });
       return;
     }
@@ -143,7 +231,7 @@ function Calculator({
     if (additionalUnitsAvailable < additionalUnitsNeeded) {
       setResult({
         eligible: false,
-        message: `You need ${additionalUnitsNeeded} additional units beyond FP1 for IAS Further Mathematics. You currently have ${additionalUnitsAvailable}.`
+        message: `You need ${additionalUnitsNeeded} additional units beyond FP1 for IAS Further Mathematics. You currently have ${additionalUnitsAvailable}. You qualify for IAL Mathematics (YMA01) but need more units for Further Mathematics.`
       });
       return;
     }
@@ -380,10 +468,19 @@ function Calculator({
           href="https://qualifications.pearson.com/en/qualifications/edexcel-international-advanced-levels/mathematics.html" 
           target="_blank" 
           rel="noopener noreferrer"
-          className="flex items-center text-[#00B2A9] hover:underline"
+          className="flex items-center text-[#00B2A9] hover:underline mb-2"
         >
           <span className="mr-2">🔗</span>
           Edexcel IAL Mathematics Qualification Page
+        </a>
+        <a 
+          href="https://qualifications.pearson.com/en/support/support-topics/exams/special-requirements/transfer-of-credit.html" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="flex items-center text-[#00B2A9] hover:underline"
+        >
+          <span className="mr-2">🔄</span>
+          Transfer of Credit Information
         </a>
       </div>
     </div>

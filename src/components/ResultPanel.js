@@ -15,13 +15,46 @@ function ResultPanel({ result }) {
   
   if (!isVisible || !result) return null;
   
+  // Determine the correct icon and color based on result
+  const getStatusIcon = () => {
+    if (result.eligible) {
+      return '✅';
+    } else if (result.qualification) {
+      // Partially eligible - eligible for a lesser qualification
+      return '✓';
+    } else {
+      return '⚠️';
+    }
+  };
+  
+  const getHeaderColor = () => {
+    if (result.eligible) {
+      return 'bg-[#00B2A9]';
+    } else if (result.qualification) {
+      // Partially eligible
+      return 'bg-[#FFD700]';
+    } else {
+      return 'bg-amber-500';
+    }
+  };
+  
+  const getHeaderTitle = () => {
+    if (result.eligible) {
+      return 'Eligible for Award';
+    } else if (result.qualification) {
+      return `Eligible for ${result.qualification}`;
+    } else {
+      return 'Not Eligible';
+    }
+  };
+  
   return (
     <div className={`fixed top-5 right-5 z-50 bg-white rounded-lg shadow-lg transition-all duration-300 ${
       isCollapsed ? 'w-14 h-14' : 'w-80'
     }`}>
-      <div className={`${result.eligible ? 'bg-[#00B2A9]' : 'bg-amber-500'} text-white p-3 rounded-t-lg flex justify-between items-center`}>
+      <div className={`${getHeaderColor()} text-white p-3 rounded-t-lg flex justify-between items-center`}>
         <h3 className={`font-medium text-sm ${isCollapsed ? 'hidden' : ''}`}>
-          {result.eligible ? '✅ Eligible for Award' : '⚠️ Not Eligible'}
+          {getStatusIcon()} {getHeaderTitle()}
         </h3>
         <button 
           onClick={() => setIsCollapsed(!isCollapsed)} 
@@ -44,7 +77,13 @@ function ResultPanel({ result }) {
         <div className="p-3 max-h-48 overflow-y-auto">
           <p className="text-sm mb-2">{result.message}</p>
           
-          {result.eligible && (
+          {result.alternativeMessage && (
+            <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-700">
+              <p>{result.alternativeMessage}</p>
+            </div>
+          )}
+          
+          {(result.eligible || result.qualification) && (
             <div className="mt-3 text-xs text-gray-600 border-t border-gray-200 pt-2">
               <p>Remember to check with your examination officer for the final verification of your eligibility.</p>
             </div>
