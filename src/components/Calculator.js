@@ -192,8 +192,7 @@ function Calculator({
     }
 
     if (!hasPureComplete) {
-      const missingUnits = pureUnits.filter(unit => !selectedUnits.includes(unit));
-      let message = `Missing ${missingUnits.join(", ")} from the required Pure Mathematics units for IAL Mathematics. `;
+      let message = `Missing ${missingPureUnits.join(", ")} from the required Pure Mathematics units for IAL Mathematics. `;
       
       if (hasFP1) {
         message += "You may still be eligible for IAS Further Mathematics if you add more units.";
