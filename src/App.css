@@ -1,0 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: #f8f9fa;
+  color: #333;
+  line-height: 1.6;
+}
+
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  background-color: #5F259F; /* Pearson Purple */
+  color: white;
+  padding: 1rem 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+button {
+  cursor: pointer;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+/* Pearson Colors */
+.pearson-purple {
+  background-color: #5F259F;
+}
+.pearson-amethyst {
+  background-color: #9B7FCB;
+}
+.pearson-light-purple {
+  background-color: #D1C4E9;
+}
+.pearson-turquoise {
+  background-color: #00B2A9;
+}
+.pearson-light-turquoise {
+  background-color: #B2E0E5;
+}
+.pearson-yellow {
+  background-color: #FFD700;
+}
+.pearson-light-yellow {
+  background-color: #FFF9C4;
+}
+
+/* Transitions */
+.transition-colors {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.transition-transform {
+  transition: transform 0.3s ease;
+}
+
+/* Responsive layout */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+} 
