@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { units } from '../data/units';
+import SelectedUnitsPanel from './SelectedUnitsPanel';
 
 function Calculator({ 
   selectedUnits, 
@@ -7,10 +8,12 @@ function Calculator({
   result, 
   setResult, 
   expandStates, 
-  setExpandStates 
+  setExpandStates,
+  onStartOver
 }) {
   const [qualificationMode, setQualificationMode] = useState('standard'); // 'standard' or 'dual'
   const [selectedQualification, setSelectedQualification] = useState('ial+ias');
+  const [showQualOptions, setShowQualOptions] = useState(false);
   
   const toggleExpand = (section) => {
     setExpandStates({
@@ -105,8 +108,6 @@ function Calculator({
     ).length;
     
     // Count all applied units that aren't used in the IAL requirement
-    // We're simplifying here, in a real scenario you'd need to handle
-    // the specific allocation rules more carefully
     const unusedAppliedUnits = ["S1", "S2", "S3", "M1", "M2", "M3", "D1"].filter(unit => 
       selectedUnits.includes(unit)
     ).length - 2; // Subtract 2 for the IAL applied pair
@@ -156,7 +157,7 @@ function Calculator({
   const renderModeSelector = () => (
     <div className="mb-6">
       <h3 className="text-lg font-semibold text-[#5F259F] mb-3">Qualification Mode</h3>
-      <div className="flex gap-2 mb-4">
+      <div className="flex flex-wrap gap-2 mb-4">
         <button
           className={`px-4 py-2 rounded-md ${
             qualificationMode === 'standard'
@@ -202,7 +203,7 @@ function Calculator({
         When combining different qualifications (e.g., IAL Mathematics with IAS Further Mathematics), you must ensure proper unit aggregation. Units previously cashed in may need to be uncashed before being used in a new qualification.
       </p>
       <a 
-        href="/ial-mathematics-aggregation-rules.pdf" 
+        href="https://qualifications.pearson.com/content/dam/pdf/International%20Advanced%20Level/Mathematics/2018/Teaching-and-Learning-Materials/aggregation-rules-and-guidance.pdf" 
         target="_blank" 
         rel="noopener noreferrer"
         className="text-[#00B2A9] hover:underline text-sm font-medium mt-2 inline-block"
@@ -214,88 +215,111 @@ function Calculator({
 
   const renderQualificationSelector = () => (
     <div className="mb-6">
-      <h3 className="text-lg font-semibold text-[#5F259F] mb-3">Additional Qualification Options</h3>
-      <p className="mb-2 text-sm">Select the combination of qualifications you are aiming for:</p>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div 
-          className={`p-4 rounded-md cursor-pointer border ${
-            selectedQualification === 'ial+ias' 
-              ? 'bg-[#E8F5E9] border-[#00B2A9]' 
-              : 'bg-white border-gray-200 hover:bg-[#F5F5F5]'
-          }`}
-          onClick={() => setSelectedQualification('ial+ias')}
+      <button
+        onClick={() => setShowQualOptions(!showQualOptions)}
+        className="w-full flex items-center justify-between bg-[#9B7FCB] hover:bg-[#5F259F] text-white p-3 rounded-md cursor-pointer transition-colors"
+      >
+        <h3 className="font-medium">Additional Qualification Options</h3>
+        <svg 
+          className={`w-5 h-5 transition-transform ${showQualOptions ? 'transform rotate-180' : ''}`}
+          fill="none" 
+          viewBox="0 0 24 24" 
+          stroke="currentColor"
         >
-          <h4 className="font-semibold">IAL Mathematics + IAS Further Mathematics</h4>
-          <p className="text-sm text-gray-600">Full A Level Mathematics with AS Level Further Mathematics</p>
-        </div>
-        
-        <div 
-          className={`p-4 rounded-md cursor-pointer border ${
-            selectedQualification === 'transfer' 
-              ? 'bg-[#E8F5E9] border-[#00B2A9]' 
-              : 'bg-white border-gray-200 hover:bg-[#F5F5F5]'
-          }`}
-          onClick={() => setSelectedQualification('transfer')}
-        >
-          <h4 className="font-semibold">Transfer of Credit</h4>
-          <p className="text-sm text-gray-600">Using qualifications from other exam boards</p>
-        </div>
-      </div>
+          <path strokeLinecap="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
       
-      {selectedQualification === 'ial+ias' && (
-        <div className="bg-[#FFF9C4] p-4 rounded-lg mt-4 border-l-4 border-[#FFD700]">
-          <h4 className="font-semibold">Important Reminder for IAL + IAS Combinations</h4>
-          <p className="text-sm mt-1">
-            If you have previously cashed in IAS Mathematics or Further Mathematics, you must uncash these qualifications
-            when cashing in the IAL options to allow reaggregation of units.
-          </p>
-          <p className="text-sm mt-2">
-            Your examination officer can help with the uncashing process, which must be completed before the IAL qualification
-            can be awarded.
-          </p>
-        </div>
-      )}
-      
-      {selectedQualification === 'transfer' && (
-        <div className="bg-[#E6F7FF] p-4 rounded-lg mt-4">
-          <h4 className="font-semibold">Transfer of Credit Information</h4>
-          <p className="text-sm mt-1">
-            If you are cashing in Edexcel IAL Mathematics with units from another exam board, you'll need to follow the Transfer
-            of Credit process.
-          </p>
-          <p className="text-sm mt-2 text-blue-600 hover:underline cursor-pointer">
-            Visit the Transfer of Credit page →
-          </p>
-          
-          <h4 className="font-semibold mt-4">Transfer of Credit Key Points:</h4>
-          <ul className="list-disc pl-5 text-sm mt-1">
-            <li>You must apply for Transfer of Credit before the qualification can be awarded</li>
-            <li>Applications must be made via your examination officer</li>
-            <li>Evidence of the previously achieved qualification must be provided</li>
-            <li>Check deadline dates carefully - applications must be received before results day</li>
-          </ul>
-        </div>
-      )}
-      
-      {selectedQualification === 'ial+ias' && (
-        <div className="mt-4">
-          <h4 className="font-semibold">IAL Mathematics + IAS Further Mathematics Requirements:</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-            <div>
-              <h5 className="font-medium">For IAL Mathematics:</h5>
-              <ul className="list-disc pl-5 text-sm">
-                <li>P1, P2, P3, and P4</li>
-                <li>One valid pair from the applied units</li>
-              </ul>
+      {showQualOptions && (
+        <div className="mt-3 border border-[#D1C4E9] rounded-md p-4 bg-white">
+          <p className="mb-3 text-sm">Select the combination of qualifications you are aiming for:</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div 
+              className={`p-4 rounded-md cursor-pointer border ${
+                selectedQualification === 'ial+ias' 
+                  ? 'bg-[#E8F5E9] border-[#00B2A9]' 
+                  : 'bg-white border-gray-200 hover:bg-[#F5F5F5]'
+              }`}
+              onClick={() => setSelectedQualification('ial+ias')}
+            >
+              <h4 className="font-semibold">IAL Mathematics + IAS Further Mathematics</h4>
+              <p className="text-sm text-gray-600">Full A Level Mathematics with AS Level Further Mathematics</p>
             </div>
-            <div>
-              <h5 className="font-medium">For IAS Further Mathematics:</h5>
-              <ul className="list-disc pl-5 text-sm">
-                <li>FP1 is required</li>
-                <li>Two more units (cannot include P1-P4)</li>
-              </ul>
+            
+            <div 
+              className={`p-4 rounded-md cursor-pointer border ${
+                selectedQualification === 'transfer' 
+                  ? 'bg-[#E8F5E9] border-[#00B2A9]' 
+                  : 'bg-white border-gray-200 hover:bg-[#F5F5F5]'
+              }`}
+              onClick={() => setSelectedQualification('transfer')}
+            >
+              <h4 className="font-semibold">Transfer of Credit</h4>
+              <p className="text-sm text-gray-600">Using qualifications from other exam boards</p>
             </div>
           </div>
+          
+          {selectedQualification === 'ial+ias' && (
+            <div className="bg-[#FFF9C4] p-4 rounded-lg mt-4 border-l-4 border-[#FFD700]">
+              <h4 className="font-semibold">Important Reminder for IAL + IAS Combinations</h4>
+              <p className="text-sm mt-1">
+                If you have previously cashed in IAS Mathematics or Further Mathematics, you must uncash these qualifications
+                when cashing in the IAL options to allow reaggregation of units.
+              </p>
+              <p className="text-sm mt-2">
+                Your examination officer can help with the uncashing process, which must be completed before the IAL qualification
+                can be awarded.
+              </p>
+            </div>
+          )}
+          
+          {selectedQualification === 'transfer' && (
+            <div className="bg-[#E6F7FF] p-4 rounded-lg mt-4">
+              <h4 className="font-semibold">Transfer of Credit Information</h4>
+              <p className="text-sm mt-1">
+                If you are cashing in Edexcel IAL Mathematics with units from another exam board, you'll need to follow the Transfer
+                of Credit process.
+              </p>
+              <a 
+                href="https://qualifications.pearson.com/en/support/support-topics/exams/special-requirements/transfer-of-credit.html" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm mt-2 text-blue-600 hover:underline inline-block"
+              >
+                Visit the Transfer of Credit page →
+              </a>
+              
+              <h4 className="font-semibold mt-4">Transfer of Credit Key Points:</h4>
+              <ul className="list-disc pl-5 text-sm mt-1">
+                <li>You must apply for Transfer of Credit before the qualification can be awarded</li>
+                <li>Applications must be made via your examination officer</li>
+                <li>Evidence of the previously achieved qualification must be provided</li>
+                <li>Check deadline dates carefully - applications must be received before results day</li>
+              </ul>
+            </div>
+          )}
+          
+          {selectedQualification === 'ial+ias' && (
+            <div className="mt-4">
+              <h4 className="font-semibold">IAL Mathematics + IAS Further Mathematics Requirements:</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                <div>
+                  <h5 className="font-medium">For IAL Mathematics:</h5>
+                  <ul className="list-disc pl-5 text-sm">
+                    <li>P1, P2, P3, and P4</li>
+                    <li>One valid pair from the applied units</li>
+                  </ul>
+                </div>
+                <div>
+                  <h5 className="font-medium">For IAS Further Mathematics:</h5>
+                  <ul className="list-disc pl-5 text-sm">
+                    <li>FP1 is required</li>
+                    <li>Two more units (cannot include P1-P4)</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -344,7 +368,7 @@ function Calculator({
       <h3 className="font-semibold">Additional Resources:</h3>
       <div className="mt-2">
         <a 
-          href="/ial-mathematics-aggregation-rules.pdf" 
+          href="https://qualifications.pearson.com/content/dam/pdf/International%20Advanced%20Level/Mathematics/2018/Teaching-and-Learning-Materials/aggregation-rules-and-guidance.pdf" 
           target="_blank" 
           rel="noopener noreferrer"
           className="flex items-center text-[#00B2A9] hover:underline mb-2"
@@ -364,10 +388,32 @@ function Calculator({
       </div>
     </div>
   );
+  
+  const renderStartOverButton = () => (
+    <div className="mt-8 mb-4">
+      <button 
+        onClick={onStartOver}
+        className="w-full bg-[#00B2A9] hover:bg-[#B2E0E5] text-white hover:text-[#5F259F] font-medium py-3 px-4 rounded transition-colors duration-300 flex items-center justify-center"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+        </svg>
+        Start Over
+      </button>
+      <p className="text-sm text-gray-600 text-center mt-2">
+        Click <strong>Start Over</strong> to reset your unit selection and check different combinations.
+      </p>
+    </div>
+  );
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <div className="bg-white p-6 rounded-lg shadow-md relative">
       <h2 className="text-xl font-bold text-[#5F259F] mb-4">Mathematics Eligibility Calculator</h2>
+      
+      {/* Floating Selected Units Panel */}
+      {selectedUnits.length > 0 && (
+        <SelectedUnitsPanel selectedUnits={selectedUnits} />
+      )}
       
       {renderInfoBanner()}
       {renderModeSelector()}
@@ -387,6 +433,7 @@ function Calculator({
       </div>
 
       {renderAdditionalResources()}
+      {renderStartOverButton()}
     </div>
   );
 }
