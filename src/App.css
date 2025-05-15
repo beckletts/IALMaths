@@ -1,5 +1,9 @@
+/* Import Google Fonts first (reliable fallback) */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+/* Then try local fonts if available */
 @font-face {
-  font-family: 'Plus Jakarta Sans';
+  font-family: 'Plus Jakarta Sans Local';
   src: url('../public/fonts/PlusJakartaSans-Light.ttf') format('truetype');
   font-weight: 300;
   font-style: normal;
@@ -7,7 +11,7 @@
 }
 
 @font-face {
-  font-family: 'Plus Jakarta Sans';
+  font-family: 'Plus Jakarta Sans Local';
   src: url('../public/fonts/PlusJakartaSans-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
@@ -15,7 +19,7 @@
 }
 
 @font-face {
-  font-family: 'Plus Jakarta Sans';
+  font-family: 'Plus Jakarta Sans Local';
   src: url('../public/fonts/PlusJakartaSans-Medium.ttf') format('truetype');
   font-weight: 500;
   font-style: normal;
@@ -23,7 +27,7 @@
 }
 
 @font-face {
-  font-family: 'Plus Jakarta Sans';
+  font-family: 'Plus Jakarta Sans Local';
   src: url('../public/fonts/PlusJakartaSans-SemiBold.ttf') format('truetype');
   font-weight: 600;
   font-style: normal;
@@ -31,7 +35,7 @@
 }
 
 @font-face {
-  font-family: 'Plus Jakarta Sans';
+  font-family: 'Plus Jakarta Sans Local';
   src: url('../public/fonts/PlusJakartaSans-Bold.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
@@ -45,7 +49,7 @@
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Plus Jakarta Sans Local', sans-serif;
   background-color: #f8f9fa;
   color: #333;
   line-height: 1.6;
@@ -66,7 +70,7 @@ header {
 
 button {
   cursor: pointer;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Plus Jakarta Sans Local', sans-serif;
   font-weight: 500;
   transition: all 0.3s ease;
 }
@@ -109,9 +113,6 @@ button {
   opacity: 0;
   transition: opacity 300ms;
 }
-
-/* For browsers that don't support system fonts */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
 
 /* Responsive layout */
 @media (max-width: 768px) {

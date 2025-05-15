@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Calculator from './components/Calculator';
+import ResultPanel from './components/ResultPanel';
 import './App.css';
 
 function App() {
@@ -29,7 +30,7 @@ function App() {
             <h1 className="text-2xl font-bold">IAL Maths Calculator</h1>
             <div className="flex items-center">
               <img 
-                src="/pearson-logo.png" 
+                src="https://www.pearson.com/content/dam/one-dot-com/one-dot-com/global/logos/pearson-logo-primary-white.png" 
                 alt="Pearson Logo" 
                 className="h-8" 
               />
@@ -39,20 +40,7 @@ function App() {
       </header>
       
       <div className="container mx-auto px-4 pb-8">
-        {result && (
-          <div className={`mb-6 p-4 rounded-lg ${result.eligible ? 'bg-[#B2E0E5]' : 'bg-[#FFF9C4]'}`}>
-            <h3 className={`font-bold mb-1 ${result.eligible ? 'text-[#00B2A9]' : 'text-amber-700'}`}>
-              {result.eligible ? '✅ Eligible for Award' : '⚠️ Not Eligible'}
-            </h3>
-            <p>{result.message}</p>
-            
-            {result.eligible && (
-              <div className="mt-3 text-sm text-gray-700">
-                <p>Remember to check with your examination officer for the final verification of your eligibility.</p>
-              </div>
-            )}
-          </div>
-        )}
+        <ResultPanel result={result} />
         
         <Calculator 
           selectedUnits={selectedUnits} 

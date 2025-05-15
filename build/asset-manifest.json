@@ -1,18 +1,18 @@
 {
   "files": {
-    "main.css": "/static/css/main.7e898ff1.css",
-    "main.js": "/static/js/main.ff24eca5.js",
+    "main.css": "/static/css/main.6855b18f.css",
+    "main.js": "/static/js/main.c018cf51.js",
     "index.html": "/index.html",
     "static/media/PlusJakartaSans-Bold.ttf": "/static/media/PlusJakartaSans-Bold.31d6cfe0d16ae931b73c.ttf",
     "static/media/PlusJakartaSans-Light.ttf": "/static/media/PlusJakartaSans-Light.31d6cfe0d16ae931b73c.ttf",
     "static/media/PlusJakartaSans-Medium.ttf": "/static/media/PlusJakartaSans-Medium.31d6cfe0d16ae931b73c.ttf",
     "static/media/PlusJakartaSans-Regular.ttf": "/static/media/PlusJakartaSans-Regular.31d6cfe0d16ae931b73c.ttf",
     "static/media/PlusJakartaSans-SemiBold.ttf": "/static/media/PlusJakartaSans-SemiBold.31d6cfe0d16ae931b73c.ttf",
-    "main.7e898ff1.css.map": "/static/css/main.7e898ff1.css.map",
-    "main.ff24eca5.js.map": "/static/js/main.ff24eca5.js.map"
+    "main.6855b18f.css.map": "/static/css/main.6855b18f.css.map",
+    "main.c018cf51.js.map": "/static/js/main.c018cf51.js.map"
   },
   "entrypoints": [
-    "static/css/main.7e898ff1.css",
-    "static/js/main.ff24eca5.js"
+    "static/css/main.6855b18f.css",
+    "static/js/main.c018cf51.js"
   ]
 }
