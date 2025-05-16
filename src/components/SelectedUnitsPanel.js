@@ -1,7 +1,18 @@
 import React, { useState } from 'react';
+import ReactGA from 'react-ga4';
 
 function SelectedUnitsPanel({ selectedUnits }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  
+  const handleCollapse = () => {
+    // Track panel collapse/expand
+    ReactGA.event({
+      category: 'UI',
+      action: isCollapsed ? 'Expand Selected Units Panel' : 'Collapse Selected Units Panel'
+    });
+    
+    setIsCollapsed(!isCollapsed);
+  };
   
   return (
     <div className={`fixed bottom-5 right-5 z-50 bg-white rounded-lg shadow-lg transition-all duration-300 ${
@@ -10,7 +21,7 @@ function SelectedUnitsPanel({ selectedUnits }) {
       <div className="bg-[#4A1D7A] text-white p-3 rounded-t-lg flex justify-between items-center">
         <h3 className={`font-medium text-sm ${isCollapsed ? 'hidden' : ''}`}>Selected Units</h3>
         <button 
-          onClick={() => setIsCollapsed(!isCollapsed)} 
+          onClick={handleCollapse} 
           className="p-1 hover:bg-[#5F259F] rounded-full focus:outline-none"
           aria-label={isCollapsed ? "Expand selected units panel" : "Collapse selected units panel"}
         >

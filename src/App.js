@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import ReactGA from 'react-ga4';
 import Calculator from './components/Calculator';
 import ResultPanel from './components/ResultPanel';
 import './App.css';
@@ -12,7 +13,18 @@ function App() {
     applied: false
   });
 
+  // Track page view when component mounts
+  useEffect(() => {
+    ReactGA.send({ hitType: "pageview", page: window.location.pathname });
+  }, []);
+
   const resetApp = () => {
+    // Track reset event
+    ReactGA.event({
+      category: 'User',
+      action: 'Reset Calculator',
+    });
+    
     setSelectedUnits([]);
     setResult(null);
     setExpandStates({
@@ -22,19 +34,26 @@ function App() {
     });
   };
 
+  // Function to handle unit selection with tracking
+  const handleUnitSelection = (units) => {
+    ReactGA.event({
+      category: 'Calculator',
+      action: 'Select Units',
+      label: JSON.stringify(units)
+    });
+    setSelectedUnits(units);
+  };
+
   return (
     <div className="App">
-      <header className="bg-[#5F259F] text-white py-4 mb-4">
+      <header className="bg-[#4A1D7A] text-white py-4 mb-4">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">IAL Maths Calculator</h1>
-            <div className="flex items-center">
-              <img 
-                src="/img/PEARSON_LOGO_WHITE_RGB.svg" 
-                alt="Pearson Logo" 
-                className="h-8" 
-              />
-            </div>
+          <div className="flex items-center">
+            <img 
+              src="/img/PEARSON_LOGO_WHITE_RGB.svg" 
+              alt="Pearson Logo" 
+              className="h-8" 
+            />
           </div>
         </div>
       </header>
@@ -44,7 +63,7 @@ function App() {
         
         <Calculator 
           selectedUnits={selectedUnits} 
-          setSelectedUnits={setSelectedUnits} 
+          setSelectedUnits={handleUnitSelection}
           result={result}
           setResult={setResult}
           expandStates={expandStates}

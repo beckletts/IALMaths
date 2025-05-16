@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ReactGA from 'react-ga4';
 import { units } from '../data/units';
 import SelectedUnitsPanel from './SelectedUnitsPanel';
 
@@ -16,6 +17,13 @@ function Calculator({
   const [showQualOptions, setShowQualOptions] = useState(false);
   
   const toggleExpand = (section) => {
+    // Track section expansion/collapse
+    ReactGA.event({
+      category: 'UI',
+      action: expandStates[section] ? 'Collapse Section' : 'Expand Section',
+      label: section
+    });
+    
     setExpandStates({
       ...expandStates,
       [section]: !expandStates[section]
@@ -23,6 +31,13 @@ function Calculator({
   };
 
   const toggleUnit = (unitCode) => {
+    // Track unit selection/deselection
+    ReactGA.event({
+      category: 'Unit',
+      action: selectedUnits.includes(unitCode) ? 'Deselect Unit' : 'Select Unit',
+      label: unitCode
+    });
+    
     if (selectedUnits.includes(unitCode)) {
       setSelectedUnits(selectedUnits.filter(code => code !== unitCode));
     } else {
@@ -32,6 +47,17 @@ function Calculator({
 
   const checkIALEligibility = () => {
     try {
+      // Track the eligibility check event
+      ReactGA.event({
+        category: 'Calculator',
+        action: 'Check Eligibility',
+        label: JSON.stringify({
+          units: selectedUnits,
+          mode: qualificationMode,
+          qualification: selectedQualification
+        })
+      });
+
       if (selectedUnits.length === 0) {
         throw new Error("Please select at least one unit");
       }
@@ -42,6 +68,13 @@ function Calculator({
         checkDualEligibility();
       }
     } catch (error) {
+      // Track errors in eligibility check
+      ReactGA.event({
+        category: 'Error',
+        action: 'Eligibility Check Error',
+        label: error.message
+      });
+      
       setResult({
         eligible: false,
         message: error.message
@@ -521,7 +554,7 @@ function Calculator({
 
       <div className="mt-6">
         <button 
-          className="w-full py-3 bg-[#4A1D7A] hover:bg-[#5F259F] text-white font-medium rounded-md shadow transition-colors"
+          className="w-full py-3 bg-[#00B2A9] hover:bg-[#008F88] text-white font-bold rounded-md shadow-lg transition-colors border-2 border-[#4A1D7A]"
           onClick={checkIALEligibility}
         >
           Check Eligibility

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ReactGA from 'react-ga4';
 
 function ResultPanel({ result }) {
   const [isVisible, setIsVisible] = useState(false);
@@ -8,6 +9,13 @@ function ResultPanel({ result }) {
     if (result) {
       setIsVisible(true);
       setIsCollapsed(false);
+      
+      // Track result view
+      ReactGA.event({
+        category: 'Result',
+        action: 'View Result',
+        label: result.eligible ? 'Eligible' : (result.qualification ? 'Partially Eligible' : 'Not Eligible')
+      });
     } else {
       setIsVisible(false);
     }
@@ -56,6 +64,26 @@ function ResultPanel({ result }) {
     return 'text-white'; // White text on green or red
   };
   
+  const handleCollapse = () => {
+    // Track panel collapse/expand
+    ReactGA.event({
+      category: 'UI',
+      action: isCollapsed ? 'Expand Result Panel' : 'Collapse Result Panel'
+    });
+    
+    setIsCollapsed(!isCollapsed);
+  };
+  
+  const handleDismiss = () => {
+    // Track dismiss action
+    ReactGA.event({
+      category: 'UI',
+      action: 'Dismiss Result'
+    });
+    
+    setIsVisible(false);
+  };
+  
   return (
     <div className={`fixed top-5 right-5 z-50 bg-white rounded-lg shadow-lg transition-all duration-300 ${
       isCollapsed ? 'w-14 h-14' : 'w-80'
@@ -65,7 +93,7 @@ function ResultPanel({ result }) {
           {getStatusIcon()} {getHeaderTitle()}
         </h3>
         <button 
-          onClick={() => setIsCollapsed(!isCollapsed)} 
+          onClick={handleCollapse} 
           className="p-1 hover:bg-opacity-70 rounded-full focus:outline-none"
           aria-label={isCollapsed ? "Expand result panel" : "Collapse result panel"}
         >
@@ -98,7 +126,7 @@ function ResultPanel({ result }) {
           )}
           
           <button 
-            onClick={() => setIsVisible(false)}
+            onClick={handleDismiss}
             className="mt-3 w-full text-xs bg-gray-200 hover:bg-gray-300 text-gray-800 py-1 px-2 rounded transition-colors"
           >
             Dismiss
