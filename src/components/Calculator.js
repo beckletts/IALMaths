@@ -322,6 +322,9 @@ function Calculator({
       <p className="text-sm mt-1 text-[#111827]">
         When combining different qualifications (e.g., IAL Mathematics with IAS Further Mathematics), you must ensure proper unit aggregation. Units previously cashed in may need to be uncashed before being used in a new qualification.
       </p>
+      <p className="text-sm mt-2 text-[#111827]">
+        Please also make sure the candidate's UCI number and personal details are the same across all series to ensure proper unit aggregation.
+      </p>
       <a 
         href="https://qualifications.pearson.com/content/dam/pdf/International%20Advanced%20Level/Mathematics/2018/Teaching-and-Learning-Materials/aggregation-rules-and-guidance.pdf" 
         target="_blank" 
