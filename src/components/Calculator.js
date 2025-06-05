@@ -107,7 +107,55 @@ function Calculator({
 
     // Check if user is eligible for IAS Mathematics
     const isEligibleForIAS = hasP1P2 && appliedUnits.length >= 1;
+    
+    // Check if user is eligible for Pure Mathematics (YPM01)
+    // For YPM01, only pure math units are required, no applied units needed
+    const isEligibleForPureMath = hasPureComplete;
 
+    // Check if user has Further Pure 1 for XFM01
+    const hasFP1 = selectedUnits.includes("FP1");
+    
+    // Count additional further pure units
+    const furtherPureCount = ["FP2", "FP3"].filter(unit => 
+      selectedUnits.includes(unit)
+    ).length;
+    
+    // For XFM01 (IAS Further Mathematics), need FP1 + 2 more units
+    const additionalUnitsNeeded = 2;
+    const unusedAppliedUnits = appliedUnits.length;
+    const additionalUnitsAvailable = furtherPureCount + unusedAppliedUnits;
+    const isEligibleForXFM01 = hasFP1 && additionalUnitsAvailable >= additionalUnitsNeeded;
+
+    // Check for XMA01 and XFM01 eligibility (Test case 1)
+    if (isEligibleForIAS && isEligibleForXFM01) {
+      setResult({
+        eligible: true,
+        message: "You are eligible for both IAS Mathematics (XMA01) and IAS Further Mathematics (XFM01) qualifications!",
+        qualification: "IAS Mathematics (XMA01) and IAS Further Mathematics (XFM01)"
+      });
+      return;
+    }
+
+    // Check for Pure Mathematics qualification (Test case 2)
+    if (isEligibleForPureMath) {
+      // If they have all pure units, they qualify for YPM01
+      if (hasValidPair) {
+        setResult({
+          eligible: true,
+          message: "You are eligible for both IAL Mathematics (YMA01) and Pure Mathematics (YPM01) qualifications!",
+          qualification: "IAL Mathematics (YMA01) and Pure Mathematics (YPM01)"
+        });
+      } else {
+        setResult({
+          eligible: true,
+          message: "You are eligible for the Pure Mathematics qualification (YPM01)!",
+          qualification: "Pure Mathematics (YPM01)"
+        });
+      }
+      return;
+    }
+
+    // Original eligibility logic
     if (!hasPureComplete && isEligibleForIAS) {
       setResult({
         eligible: true,
@@ -144,7 +192,8 @@ function Calculator({
       return;
     }
 
-    if (!hasValidPair) {
+    // Only check for applied pairs if trying for YMA01, not if aiming for YPM01
+    if (!hasValidPair && !isEligibleForPureMath) {
       // Construct helpful message about what pairs they could add
       let message = "Missing a valid applied pair. You need one of: ";
       const possiblePairs = [];
@@ -208,6 +257,19 @@ function Calculator({
     // Check if eligible for IAS Mathematics alone
     const hasP1P2 = ["P1", "P2"].every(unit => selectedUnits.includes(unit));
     const isEligibleForIAS = hasP1P2 && appliedUnits.length >= 1;
+    
+    // Check if eligible for Pure Mathematics (YPM01)
+    const isEligibleForPureMath = hasPureComplete;
+    
+    // Check for YMA01 and YPM01 eligibility (Test case 3)
+    if (hasPureComplete && isEligibleForPureMath) {
+      setResult({
+        eligible: true,
+        message: "You are eligible for both IAL Mathematics (YMA01) and Pure Mathematics (YPM01) qualifications!",
+        qualification: "IAL Mathematics (YMA01) and Pure Mathematics (YPM01)"
+      });
+      return;
+    }
 
     if (!hasPureComplete && !hasFP1) {
       // Neither IAL Math nor IAS Further Math requirements met
@@ -238,7 +300,7 @@ function Calculator({
       return;
     }
 
-    if (!hasValidPair) {
+    if (!hasValidPair && !isEligibleForPureMath) {
       let message = "Missing a valid applied pair for IAL Mathematics. You need one of: S1+S2, M1+M2, S1+M1, S1+D1, or M1+D1";
       
       setResult({
