@@ -181,6 +181,9 @@ function Calculator({
     const missingPureUnits = pureUnits.filter(unit => !selectedUnits.includes(unit)); 
     const hasPureComplete = pureUnits.every(unit => selectedUnits.includes(unit));
     
+    // Check for AS Level eligibility (P1, P2 and one applied)
+    const hasP1P2 = ["P1", "P2"].every(unit => selectedUnits.includes(unit));
+    
     // Check for valid applied pairs for IAL
     const validPairs = [
       ["S1", "S2"], ["M1", "M2"], ["S1", "M1"], 
@@ -198,15 +201,47 @@ function Calculator({
       selectedUnits.includes(unit)
     ).length;
     
-    // Count all applied units that aren't used in the IAL requirement
+    // Count all applied units
     const appliedUnits = ["S1", "S2", "S3", "M1", "M2", "M3", "D1"].filter(unit => 
       selectedUnits.includes(unit)
     );
     
+    // Check if eligible for IAS Mathematics (XMA01)
+    const isEligibleForXMA01 = hasP1P2 && appliedUnits.length >= 1;
+    
+    // Check if eligible for Pure Mathematics (YPM01)
+    const isEligibleForYPM01 = hasPureComplete;
+    
+    // For XFM01 (IAS Further Mathematics), need FP1 + 2 more units
+    // Applied units can also be used for XFM01 and don't need a pair
+    const additionalUnitsForFM = furtherPureCount + appliedUnits.length;
+    const isEligibleForXFM01 = hasFP1 && additionalUnitsForFM >= 2;
+    
+    // Check if student can get YMA01 (P1-P4 + valid applied pair)
+    const canGetYMA01 = hasPureComplete && hasValidPair;
+
+    // Scenario 1: Check for XMA01 and XFM01 eligibility in dual mode (P1,P2,FP1,FP2,FP3,D1)
+    if (isEligibleForXMA01 && isEligibleForXFM01 && !hasPureComplete) {
+      setResult({
+        eligible: true,
+        message: "You are eligible for both IAS Mathematics (XMA01) and IAS Further Mathematics (XFM01) qualifications!",
+        qualification: "IAS Mathematics (XMA01) and IAS Further Mathematics (XFM01)"
+      });
+      return;
+    }
+
+    // Scenario 2: Check if the student is trying to cash in both YMA01 and YPM01 (P1,P2,P3,P4,FP1,FP2,M1,M2)
+    if (isEligibleForYPM01 && canGetYMA01) {
+      setResult({
+        eligible: false,
+        message: "Unfortunately, you are not eligible to proceed at this time. While you have sufficient units for both the YMA01 and YPM01 qualifications, these two qualifications cannot be cashed in during the same exam series."
+      });
+      return;
+    }
+
     const unusedAppliedUnits = Math.max(0, appliedUnits.length - 2); // Subtract 2 for the IAL applied pair
 
     // Check if eligible for IAS Mathematics alone
-    const hasP1P2 = ["P1", "P2"].every(unit => selectedUnits.includes(unit));
     const isEligibleForIAS = hasP1P2 && appliedUnits.length >= 1;
 
     if (!hasPureComplete && !hasFP1) {
