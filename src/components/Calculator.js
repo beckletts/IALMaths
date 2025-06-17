@@ -220,8 +220,18 @@ function Calculator({
     // Check if student can get YMA01 (P1-P4 + valid applied pair)
     const canGetYMA01 = hasPureComplete && hasValidPair;
 
-    // Scenario 1: Check for XMA01 and XFM01 eligibility in dual mode
-    if (isEligibleForXMA01 && isEligibleForXFM01 && !hasPureComplete) {
+    // First check XFM01 eligibility independently
+    if (isEligibleForXFM01) {
+      setResult({
+        eligible: true,
+        message: "You are eligible for the IAS Further Mathematics qualification (XFM01)!",
+        qualification: "IAS Further Mathematics (XFM01)"
+      });
+      return;
+    }
+
+    // Then check for dual eligibility
+    if (isEligibleForXMA01 && isEligibleForXFM01) {
       setResult({
         eligible: true,
         message: "You are eligible for both IAS Mathematics (XMA01) and IAS Further Mathematics (XFM01) qualifications!",
@@ -230,7 +240,7 @@ function Calculator({
       return;
     }
 
-    // Scenario 2: Check if the student is trying to cash in both YMA01 and YPM01 (P1,P2,P3,P4,FP1,FP2,M1,M2)
+    // Check YMA01 and YPM01 conflict
     if (isEligibleForYPM01 && canGetYMA01) {
       setResult({
         eligible: false,
@@ -239,7 +249,23 @@ function Calculator({
       return;
     }
 
-    const unusedAppliedUnits = Math.max(0, appliedUnits.length - 2); // Subtract 2 for the IAL applied pair
+    // Check Pure Mathematics requirements if not eligible for Further Mathematics
+    if (!hasPureComplete) {
+      let message = "Missing one or more required Pure Mathematics units (P1-P4)";
+      
+      // Add recommendations for Further Mathematics if they're close
+      if (hasFP1) {
+        message += ". However, you could aim for IAS Further Mathematics (XFM01) by adding " + 
+                  (additionalUnitsForFM === 0 ? "two more units" : 
+                   additionalUnitsForFM === 1 ? "one more unit" : "");
+      }
+      
+      setResult({
+        eligible: false,
+        message: message
+      });
+      return;
+    }
 
     // Check if eligible for IAS Mathematics alone
     const isEligibleForIAS = hasP1P2 && appliedUnits.length >= 1;
@@ -259,30 +285,6 @@ function Calculator({
       return;
     }
 
-    if (!hasPureComplete) {
-      let message = `Missing ${missingPureUnits.join(", ")} from the required Pure Mathematics units for IAL Mathematics. `;
-      
-      if (hasFP1) {
-        message += "You may still be eligible for IAS Further Mathematics if you add more units.";
-      }
-      
-      setResult({
-        eligible: false,
-        message: message
-      });
-      return;
-    }
-
-    if (!hasValidPair) {
-      let message = "Missing a valid applied pair for IAL Mathematics. You need one of: S1+S2, M1+M2, S1+M1, S1+D1, or M1+D1";
-      
-      setResult({
-        eligible: false,
-        message: message
-      });
-      return;
-    }
-
     if (!hasFP1) {
       setResult({
         eligible: false,
@@ -293,7 +295,7 @@ function Calculator({
 
     // Need at least 2 more units beyond FP1
     const additionalUnitsNeeded = 2;
-    const additionalUnitsAvailable = furtherPureCount + Math.max(0, unusedAppliedUnits);
+    const additionalUnitsAvailable = furtherPureCount + Math.max(0, appliedUnits.length - 2);
 
     if (additionalUnitsAvailable < additionalUnitsNeeded) {
       setResult({
