@@ -83,18 +83,51 @@ function Calculator({
   };
 
   const checkStandardEligibility = () => {
-    // Check Pure Mathematics eligibility
+    // Check Further Pure requirements first
+    const hasFP1 = selectedUnits.includes("FP1");
+    
+    // Count further pure units (FP1, FP2, FP3)
+    const furtherPureUnits = ["FP1", "FP2", "FP3"].filter(unit => 
+      selectedUnits.includes(unit)
+    );
+    
+    // Count all applied units
+    const appliedUnits = ["S1", "S2", "S3", "M1", "M2", "M3", "D1"].filter(unit => 
+      selectedUnits.includes(unit)
+    );
+
+    // For XFM01 (IAS Further Mathematics)
+    // Must have FP1 plus two additional units (can be further pure or applied)
+    const totalAdditionalUnits = (furtherPureUnits.length - 1) + appliedUnits.length; // -1 because we don't count FP1 twice
+    const isEligibleForXFM01 = hasFP1 && totalAdditionalUnits >= 2;
+
+    // Check XFM01 eligibility first
+    if (isEligibleForXFM01) {
+      setResult({
+        eligible: true,
+        message: "You are eligible for the IAS Further Mathematics qualification (XFM01)!",
+        qualification: "IAS Further Mathematics (XFM01)"
+      });
+      return;
+    }
+
+    // If they have FP1 but not enough units, give specific guidance
+    if (hasFP1) {
+      const unitsNeeded = 2 - totalAdditionalUnits;
+      setResult({
+        eligible: false,
+        message: `You have FP1 but need ${unitsNeeded} more unit${unitsNeeded > 1 ? 's' : ''} (either Further Pure or Applied) to be eligible for IAS Further Mathematics (XFM01).`
+      });
+      return;
+    }
+
+    // Only check Pure Mathematics requirements if not eligible for Further Mathematics
     const pureUnits = ["P1", "P2", "P3", "P4"];
     const selectedPureUnits = pureUnits.filter(unit => selectedUnits.includes(unit));
     const hasPureComplete = pureUnits.every(unit => selectedUnits.includes(unit));
     
     // Check for AS Level eligibility (P1, P2 and one applied)
     const hasP1P2 = ["P1", "P2"].every(unit => selectedUnits.includes(unit));
-    
-    // Count applied units
-    const appliedUnits = ["S1", "S2", "S3", "M1", "M2", "M3", "D1"].filter(unit => 
-      selectedUnits.includes(unit)
-    );
 
     // Check for valid applied pairs for IAL
     const validPairs = [
