@@ -212,15 +212,15 @@ function Calculator({
     // Check if eligible for Pure Mathematics (YPM01)
     const isEligibleForYPM01 = hasPureComplete;
     
-    // For XFM01 (IAS Further Mathematics), need FP1 + 2 more units
-    // Applied units can also be used for XFM01 and don't need a pair
+    // For XFM01 (IAS Further Mathematics)
+    // Must have FP1 plus two additional units (can be further pure or applied)
     const additionalUnitsForFM = furtherPureCount + appliedUnits.length;
     const isEligibleForXFM01 = hasFP1 && additionalUnitsForFM >= 2;
     
     // Check if student can get YMA01 (P1-P4 + valid applied pair)
     const canGetYMA01 = hasPureComplete && hasValidPair;
 
-    // Scenario 1: Check for XMA01 and XFM01 eligibility in dual mode (P1,P2,FP1,FP2,FP3,D1)
+    // Scenario 1: Check for XMA01 and XFM01 eligibility in dual mode
     if (isEligibleForXMA01 && isEligibleForXFM01 && !hasPureComplete) {
       setResult({
         eligible: true,
