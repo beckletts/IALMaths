@@ -97,15 +97,14 @@ function Calculator({
     );
 
     // For YFM01 (IAL Further Mathematics)
-    // Must have all three FP units plus three more units
+    // Must have either:
+    // 1. All three FP units plus three applied units, OR
+    // 2. Two FP units plus four applied units
+    const hasTwoFP = furtherPureUnits.length >= 2;
     const hasAllFP = furtherPureUnits.length === 3;
-    const totalAdditionalUnits = appliedUnits.length;
-    const isEligibleForYFM01 = hasAllFP && totalAdditionalUnits >= 3;
-
-    // For XFM01 (IAS Further Mathematics)
-    // Must have FP1 plus two additional units (can be further pure or applied)
-    const totalUnitsForXFM01 = (furtherPureUnits.length - 1) + appliedUnits.length; // -1 because we don't count FP1 twice
-    const isEligibleForXFM01 = hasFP1 && totalUnitsForXFM01 >= 2;
+    const totalAppliedUnits = appliedUnits.length;
+    const isEligibleForYFM01 = (hasAllFP && totalAppliedUnits >= 3) || 
+                              (hasTwoFP && totalAppliedUnits >= 4);
 
     // Check YFM01 eligibility first
     if (isEligibleForYFM01) {
@@ -116,6 +115,11 @@ function Calculator({
       });
       return;
     }
+
+    // For XFM01 (IAS Further Mathematics)
+    // Must have FP1 plus two additional units (can be further pure or applied)
+    const totalUnitsForXFM01 = (furtherPureUnits.length - 1) + appliedUnits.length; // -1 because we don't count FP1 twice
+    const isEligibleForXFM01 = hasFP1 && totalUnitsForXFM01 >= 2;
 
     // Check XFM01 eligibility
     if (isEligibleForXFM01) {
@@ -129,11 +133,11 @@ function Calculator({
 
     // If they have FP1 but not enough units, give specific guidance
     if (hasFP1) {
-      if (hasAllFP) {
-        const unitsNeeded = 3 - totalAdditionalUnits;
+      if (hasTwoFP) {
+        const appliedUnitsNeeded = 4 - totalAppliedUnits;
         setResult({
           eligible: false,
-          message: `You have all Further Pure units but need ${unitsNeeded} more applied unit${unitsNeeded > 1 ? 's' : ''} to be eligible for IAL Further Mathematics (YFM01).`
+          message: `You have two Further Pure units but need ${appliedUnitsNeeded} more applied unit${appliedUnitsNeeded > 1 ? 's' : ''} to be eligible for IAL Further Mathematics (YFM01).`
         });
       } else {
         const unitsNeeded = 2 - totalUnitsForXFM01;
@@ -247,10 +251,14 @@ function Calculator({
     );
 
     // For YFM01 (IAL Further Mathematics)
-    // Must have all three FP units plus three more units
+    // Must have either:
+    // 1. All three FP units plus three applied units, OR
+    // 2. Two FP units plus four applied units
+    const hasTwoFP = furtherPureUnits.length >= 2;
     const hasAllFP = furtherPureUnits.length === 3;
-    const totalAdditionalUnits = appliedUnits.length;
-    const isEligibleForYFM01 = hasAllFP && totalAdditionalUnits >= 3;
+    const totalAppliedUnits = appliedUnits.length;
+    const isEligibleForYFM01 = (hasAllFP && totalAppliedUnits >= 3) || 
+                              (hasTwoFP && totalAppliedUnits >= 4);
 
     // For XFM01 (IAS Further Mathematics)
     // Must have FP1 plus two additional units (can be further pure or applied)
@@ -318,11 +326,11 @@ function Calculator({
 
     // If they have FP1 but not enough units, give specific guidance
     if (hasFP1) {
-      if (hasAllFP) {
-        const unitsNeeded = 3 - totalAdditionalUnits;
+      if (hasTwoFP) {
+        const appliedUnitsNeeded = 4 - totalAppliedUnits;
         setResult({
           eligible: false,
-          message: `You have all Further Pure units but need ${unitsNeeded} more applied unit${unitsNeeded > 1 ? 's' : ''} to be eligible for IAL Further Mathematics (YFM01).`
+          message: `You have two Further Pure units but need ${appliedUnitsNeeded} more applied unit${appliedUnitsNeeded > 1 ? 's' : ''} to be eligible for IAL Further Mathematics (YFM01).`
         });
       } else {
         const unitsNeeded = 2 - totalUnitsForXFM01;
@@ -341,8 +349,8 @@ function Calculator({
       // Add recommendations for Further Mathematics if they're close
       if (hasFP1) {
         message += ". However, you could aim for IAS Further Mathematics (XFM01) by adding " + 
-                  (totalAdditionalUnits === 0 ? "two more units" : 
-                   totalAdditionalUnits === 1 ? "one more unit" : "");
+                  (totalAppliedUnits === 0 ? "two more units" : 
+                   totalAppliedUnits === 1 ? "one more unit" : "");
       }
       
       setResult({
@@ -380,7 +388,7 @@ function Calculator({
 
     // Need at least 2 more units beyond FP1
     const additionalUnitsNeeded = 2;
-    const additionalUnitsAvailable = totalAdditionalUnits;
+    const additionalUnitsAvailable = totalAppliedUnits;
 
     if (additionalUnitsAvailable < additionalUnitsNeeded) {
       setResult({
