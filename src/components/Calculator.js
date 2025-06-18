@@ -96,12 +96,28 @@ function Calculator({
       selectedUnits.includes(unit)
     );
 
+    // For YFM01 (IAL Further Mathematics)
+    // Must have all three FP units plus three more units
+    const hasAllFP = furtherPureUnits.length === 3;
+    const totalAdditionalUnits = appliedUnits.length;
+    const isEligibleForYFM01 = hasAllFP && totalAdditionalUnits >= 3;
+
     // For XFM01 (IAS Further Mathematics)
     // Must have FP1 plus two additional units (can be further pure or applied)
-    const totalAdditionalUnits = (furtherPureUnits.length - 1) + appliedUnits.length; // -1 because we don't count FP1 twice
-    const isEligibleForXFM01 = hasFP1 && totalAdditionalUnits >= 2;
+    const totalUnitsForXFM01 = (furtherPureUnits.length - 1) + appliedUnits.length; // -1 because we don't count FP1 twice
+    const isEligibleForXFM01 = hasFP1 && totalUnitsForXFM01 >= 2;
 
-    // Check XFM01 eligibility first
+    // Check YFM01 eligibility first
+    if (isEligibleForYFM01) {
+      setResult({
+        eligible: true,
+        message: "You are eligible for the IAL Further Mathematics qualification (YFM01)!",
+        qualification: "IAL Further Mathematics (YFM01)"
+      });
+      return;
+    }
+
+    // Check XFM01 eligibility
     if (isEligibleForXFM01) {
       setResult({
         eligible: true,
@@ -113,11 +129,19 @@ function Calculator({
 
     // If they have FP1 but not enough units, give specific guidance
     if (hasFP1) {
-      const unitsNeeded = 2 - totalAdditionalUnits;
-      setResult({
-        eligible: false,
-        message: `You have FP1 but need ${unitsNeeded} more unit${unitsNeeded > 1 ? 's' : ''} (either Further Pure or Applied) to be eligible for IAS Further Mathematics (XFM01).`
-      });
+      if (hasAllFP) {
+        const unitsNeeded = 3 - totalAdditionalUnits;
+        setResult({
+          eligible: false,
+          message: `You have all Further Pure units but need ${unitsNeeded} more applied unit${unitsNeeded > 1 ? 's' : ''} to be eligible for IAL Further Mathematics (YFM01).`
+        });
+      } else {
+        const unitsNeeded = 2 - totalUnitsForXFM01;
+        setResult({
+          eligible: false,
+          message: `You have FP1 but need ${unitsNeeded} more unit${unitsNeeded > 1 ? 's' : ''} (either Further Pure or Applied) to be eligible for IAS Further Mathematics (XFM01).`
+        });
+      }
       return;
     }
 
@@ -222,30 +246,16 @@ function Calculator({
       selectedUnits.includes(unit)
     );
 
+    // For YFM01 (IAL Further Mathematics)
+    // Must have all three FP units plus three more units
+    const hasAllFP = furtherPureUnits.length === 3;
+    const totalAdditionalUnits = appliedUnits.length;
+    const isEligibleForYFM01 = hasAllFP && totalAdditionalUnits >= 3;
+
     // For XFM01 (IAS Further Mathematics)
     // Must have FP1 plus two additional units (can be further pure or applied)
-    const totalAdditionalUnits = (furtherPureUnits.length - 1) + appliedUnits.length; // -1 because we don't count FP1 twice
-    const isEligibleForXFM01 = hasFP1 && totalAdditionalUnits >= 2;
-
-    // Check XFM01 eligibility first
-    if (isEligibleForXFM01) {
-      setResult({
-        eligible: true,
-        message: "You are eligible for the IAS Further Mathematics qualification (XFM01)!",
-        qualification: "IAS Further Mathematics (XFM01)"
-      });
-      return;
-    }
-
-    // If they have FP1 but not enough units, give specific guidance
-    if (hasFP1) {
-      const unitsNeeded = 2 - totalAdditionalUnits;
-      setResult({
-        eligible: false,
-        message: `You have FP1 but need ${unitsNeeded} more unit${unitsNeeded > 1 ? 's' : ''} (either Further Pure or Applied) to be eligible for IAS Further Mathematics (XFM01).`
-      });
-      return;
-    }
+    const totalUnitsForXFM01 = (furtherPureUnits.length - 1) + appliedUnits.length; // -1 because we don't count FP1 twice
+    const isEligibleForXFM01 = hasFP1 && totalUnitsForXFM01 >= 2;
 
     // Only check Pure Mathematics requirements if not eligible for Further Mathematics
     const pureUnits = ["P1", "P2", "P3", "P4"];
@@ -276,6 +286,51 @@ function Calculator({
         eligible: false,
         message: "Unfortunately, you are not eligible to proceed at this time. While you have sufficient units for both the YMA01 and YPM01 qualifications, these two qualifications cannot be cashed in during the same exam series."
       });
+      return;
+    }
+
+    // Check if eligible for both YMA01 and YFM01
+    if (canGetYMA01 && isEligibleForYFM01) {
+      setResult({
+        eligible: true,
+        message: "You are eligible for both IAL Mathematics (YMA01) and IAL Further Mathematics (YFM01) qualifications!"
+      });
+      return;
+    }
+
+    // Check if eligible for YFM01 alone
+    if (isEligibleForYFM01) {
+      setResult({
+        eligible: true,
+        message: "You are eligible for the IAL Further Mathematics qualification (YFM01)!"
+      });
+      return;
+    }
+
+    // Check if eligible for XFM01 alone
+    if (isEligibleForXFM01) {
+      setResult({
+        eligible: true,
+        message: "You are eligible for the IAS Further Mathematics qualification (XFM01)!"
+      });
+      return;
+    }
+
+    // If they have FP1 but not enough units, give specific guidance
+    if (hasFP1) {
+      if (hasAllFP) {
+        const unitsNeeded = 3 - totalAdditionalUnits;
+        setResult({
+          eligible: false,
+          message: `You have all Further Pure units but need ${unitsNeeded} more applied unit${unitsNeeded > 1 ? 's' : ''} to be eligible for IAL Further Mathematics (YFM01).`
+        });
+      } else {
+        const unitsNeeded = 2 - totalUnitsForXFM01;
+        setResult({
+          eligible: false,
+          message: `You have FP1 but need ${unitsNeeded} more unit${unitsNeeded > 1 ? 's' : ''} (either Further Pure or Applied) to be eligible for IAS Further Mathematics (XFM01).`
+        });
+      }
       return;
     }
 
