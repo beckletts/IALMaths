@@ -99,6 +99,10 @@ function Calculator({
     // Check for P1 and P2
     const hasP1P2 = ["P1", "P2"].every(unit => selectedUnits.includes(unit));
 
+    // Check for all P units
+    const pureUnits = ["P1", "P2", "P3", "P4"];
+    const hasPureComplete = pureUnits.every(unit => selectedUnits.includes(unit));
+
     // For YFM01 (IAL Further Mathematics)
     // Must have either:
     // 1. All three FP units plus three applied units, OR
@@ -119,6 +123,16 @@ function Calculator({
       return;
     }
 
+    // Check for YPM01 eligibility (P1-P4 and at least one FP unit)
+    if (hasPureComplete && furtherPureUnits.length >= 1) {
+      setResult({
+        eligible: true,
+        message: "You are eligible for the IAL Pure Mathematics qualification (YPM01)!",
+        qualification: "IAL Pure Mathematics (YPM01)"
+      });
+      return;
+    }
+
     // For XFM01 (IAS Further Mathematics)
     // Must have FP1 plus two additional units (can be further pure or applied)
     const totalUnitsForXFM01 = (furtherPureUnits.length - 1) + appliedUnits.length; // -1 because we don't count FP1 twice
@@ -135,7 +149,7 @@ function Calculator({
     }
 
     // Check for XPM01 eligibility (P1, P2, and FP1)
-    if (hasP1P2 && hasFP1) {
+    if (hasP1P2 && hasFP1 && !hasPureComplete) {
       setResult({
         eligible: true,
         message: "You are eligible for the IAS Pure Mathematics qualification (XPM01)!",
@@ -297,7 +311,7 @@ function Calculator({
     const isEligibleForXMA01 = hasP1P2 && appliedUnits.length >= 1;
     
     // Check if eligible for Pure Mathematics (YPM01)
-    const isEligibleForYPM01 = hasPureComplete;
+    const isEligibleForYPM01 = hasPureComplete && furtherPureUnits.length >= 1;
     
     // Check if student can get YMA01 (P1-P4 + valid applied pair)
     const canGetYMA01 = hasPureComplete && hasValidPair;
@@ -329,6 +343,16 @@ function Calculator({
       return;
     }
 
+    // Check if eligible for YPM01 alone
+    if (isEligibleForYPM01) {
+      setResult({
+        eligible: true,
+        message: "You are eligible for the IAL Pure Mathematics qualification (YPM01)!",
+        qualification: "IAL Pure Mathematics (YPM01)"
+      });
+      return;
+    }
+
     // Check if eligible for XFM01 alone
     if (isEligibleForXFM01) {
       setResult({
@@ -339,7 +363,7 @@ function Calculator({
     }
 
     // Check for XPM01 eligibility (P1, P2, and FP1)
-    if (hasP1P2 && hasFP1) {
+    if (hasP1P2 && hasFP1 && !hasPureComplete) {
       setResult({
         eligible: true,
         message: "You are eligible for the IAS Pure Mathematics qualification (XPM01)!",
