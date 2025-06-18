@@ -83,16 +83,18 @@ function Calculator({
   };
 
   const checkStandardEligibility = () => {
+    // Define constant arrays at the top
+    const pureUnits = ["P1", "P2", "P3", "P4"];
+    const furtherPureUnits = ["FP1", "FP2", "FP3"];
+    const appliedUnits = ["S1", "S2", "S3", "M1", "M2", "M3", "D1"].filter(unit => 
+      selectedUnits.includes(unit)
+    );
+
     // Check Further Pure requirements first
     const hasFP1 = selectedUnits.includes("FP1");
     
     // Count further pure units (FP1, FP2, FP3)
-    const furtherPureUnits = ["FP1", "FP2", "FP3"].filter(unit => 
-      selectedUnits.includes(unit)
-    );
-    
-    // Count all applied units
-    const appliedUnits = ["S1", "S2", "S3", "M1", "M2", "M3", "D1"].filter(unit => 
+    const selectedFurtherPureUnits = furtherPureUnits.filter(unit => 
       selectedUnits.includes(unit)
     );
 
@@ -100,15 +102,14 @@ function Calculator({
     const hasP1P2 = ["P1", "P2"].every(unit => selectedUnits.includes(unit));
 
     // Check for all P units
-    const pureUnits = ["P1", "P2", "P3", "P4"];
     const hasPureComplete = pureUnits.every(unit => selectedUnits.includes(unit));
 
     // For YFM01 (IAL Further Mathematics)
     // Must have either:
     // 1. All three FP units plus three applied units, OR
     // 2. Two FP units plus four applied units
-    const hasTwoFP = furtherPureUnits.length >= 2;
-    const hasAllFP = furtherPureUnits.length === 3;
+    const hasTwoFP = selectedFurtherPureUnits.length >= 2;
+    const hasAllFP = selectedFurtherPureUnits.length === 3;
     const totalAppliedUnits = appliedUnits.length;
     const isEligibleForYFM01 = (hasAllFP && totalAppliedUnits >= 3) || 
                               (hasTwoFP && totalAppliedUnits >= 4);
@@ -124,7 +125,7 @@ function Calculator({
     }
 
     // Check for YPM01 eligibility (P1-P4 and at least one FP unit)
-    if (hasPureComplete && furtherPureUnits.length >= 1) {
+    if (hasPureComplete && selectedFurtherPureUnits.length >= 1) {
       setResult({
         eligible: true,
         message: "You are eligible for the IAL Pure Mathematics qualification (YPM01)!",
@@ -135,7 +136,7 @@ function Calculator({
 
     // For XFM01 (IAS Further Mathematics)
     // Must have FP1 plus two additional units (can be further pure or applied)
-    const totalUnitsForXFM01 = (furtherPureUnits.length - 1) + appliedUnits.length; // -1 because we don't count FP1 twice
+    const totalUnitsForXFM01 = (selectedFurtherPureUnits.length - 1) + appliedUnits.length; // -1 because we don't count FP1 twice
     const isEligibleForXFM01 = hasFP1 && totalUnitsForXFM01 >= 2;
 
     // Check XFM01 eligibility
@@ -177,11 +178,7 @@ function Calculator({
     }
 
     // Only check Pure Mathematics requirements if not eligible for Further Mathematics
-    const pureUnits = ["P1", "P2", "P3", "P4"];
     const selectedPureUnits = pureUnits.filter(unit => selectedUnits.includes(unit));
-    const hasPureComplete = pureUnits.every(unit => selectedUnits.includes(unit));
-    
-    // Check for AS Level eligibility (P1, P2 and one applied)
 
     // Check for valid applied pairs for IAL
     const validPairs = [
