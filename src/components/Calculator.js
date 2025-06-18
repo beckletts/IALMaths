@@ -96,6 +96,9 @@ function Calculator({
       selectedUnits.includes(unit)
     );
 
+    // Check for P1 and P2
+    const hasP1P2 = ["P1", "P2"].every(unit => selectedUnits.includes(unit));
+
     // For YFM01 (IAL Further Mathematics)
     // Must have either:
     // 1. All three FP units plus three applied units, OR
@@ -127,6 +130,16 @@ function Calculator({
         eligible: true,
         message: "You are eligible for the IAS Further Mathematics qualification (XFM01)!",
         qualification: "IAS Further Mathematics (XFM01)"
+      });
+      return;
+    }
+
+    // Check for XPM01 eligibility (P1, P2, and FP1)
+    if (hasP1P2 && hasFP1) {
+      setResult({
+        eligible: true,
+        message: "You are eligible for the IAS Pure Mathematics qualification (XPM01)!",
+        qualification: "IAS Pure Mathematics (XPM01)"
       });
       return;
     }
@@ -250,6 +263,9 @@ function Calculator({
       selectedUnits.includes(unit)
     );
 
+    // Check for P1 and P2
+    const hasP1P2 = ["P1", "P2"].every(unit => selectedUnits.includes(unit));
+
     // For YFM01 (IAL Further Mathematics)
     // Must have either:
     // 1. All three FP units plus three applied units, OR
@@ -268,7 +284,6 @@ function Calculator({
     // Only check Pure Mathematics requirements if not eligible for Further Mathematics
     const pureUnits = ["P1", "P2", "P3", "P4"];
     const hasPureComplete = pureUnits.every(unit => selectedUnits.includes(unit));
-    const hasP1P2 = ["P1", "P2"].every(unit => selectedUnits.includes(unit));
     
     // Check for valid applied pairs for IAL
     const validPairs = [
@@ -320,6 +335,16 @@ function Calculator({
       setResult({
         eligible: true,
         message: "You are eligible for the IAS Further Mathematics qualification (XFM01)!"
+      });
+      return;
+    }
+
+    // Check for XPM01 eligibility (P1, P2, and FP1)
+    if (hasP1P2 && hasFP1) {
+      setResult({
+        eligible: true,
+        message: "You are eligible for the IAS Pure Mathematics qualification (XPM01)!",
+        qualification: "IAS Pure Mathematics (XPM01)"
       });
       return;
     }
