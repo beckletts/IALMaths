@@ -168,7 +168,6 @@ function Calculator({
     const hasPureComplete = pureUnits.every(unit => selectedUnits.includes(unit));
     
     // Check for AS Level eligibility (P1, P2 and one applied)
-    const hasP1P2 = ["P1", "P2"].every(unit => selectedUnits.includes(unit));
 
     // Check for valid applied pairs for IAL
     const validPairs = [
