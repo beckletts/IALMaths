@@ -317,6 +317,15 @@ function Calculator({
     // Check if student can get YMA01 (P1-P4 + valid applied pair)
     const canGetYMA01 = hasPureComplete && hasValidPair;
 
+    // Check if eligible for both YMA01 and XMA01
+    if (hasPureComplete && appliedUnits.length >= 1) {
+      setResult({
+        eligible: true,
+        message: "You are eligible for both IAL Mathematics (YMA01) and IAS Mathematics (XMA01) qualifications!"
+      });
+      return;
+    }
+
     // Check if eligible for both YMA01 and YFM01
     if (canGetYMA01 && isEligibleForYFM01) {
       setResult({
