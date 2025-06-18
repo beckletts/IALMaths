@@ -263,6 +263,7 @@ function Calculator({
     // Define constant arrays at the top
     const pureUnits = ["P1", "P2", "P3", "P4"];
     const furtherPureUnits = ["FP1", "FP2", "FP3"];
+    const allAppliedUnits = ["S1", "S2", "S3", "M1", "M2", "M3", "D1"];
     
     // Check Further Pure requirements first
     const hasFP1 = selectedUnits.includes("FP1");
@@ -273,7 +274,7 @@ function Calculator({
     );
     
     // Count all applied units
-    const appliedUnits = ["S1", "S2", "S3", "M1", "M2", "M3", "D1"].filter(unit => 
+    const appliedUnits = allAppliedUnits.filter(unit => 
       selectedUnits.includes(unit)
     );
 
@@ -295,7 +296,7 @@ function Calculator({
 
     // For XFM01 (IAS Further Mathematics)
     // Must have FP1 plus two additional units (can be further pure or applied)
-    const totalUnitsForXFM01 = (furtherPureUnits.length - 1) + appliedUnits.length; // -1 because we don't count FP1 twice
+    const totalUnitsForXFM01 = (selectedFurtherPureUnits.length - 1) + appliedUnits.length; // -1 because we don't count FP1 twice
     const isEligibleForXFM01 = hasFP1 && totalUnitsForXFM01 >= 2;
     
     // Check for valid applied pairs for IAL
@@ -316,6 +317,15 @@ function Calculator({
     // Check if student can get YMA01 (P1-P4 + valid applied pair)
     const canGetYMA01 = hasPureComplete && hasValidPair;
 
+    // Check if eligible for both YMA01 and YFM01
+    if (canGetYMA01 && isEligibleForYFM01) {
+      setResult({
+        eligible: true,
+        message: "You are eligible for both IAL Mathematics (YMA01) and IAL Further Mathematics (YFM01) qualifications!"
+      });
+      return;
+    }
+
     // Check if eligible for both YMA01 and XFM01
     if (canGetYMA01 && isEligibleForXFM01) {
       setResult({
@@ -330,15 +340,6 @@ function Calculator({
       setResult({
         eligible: false,
         message: "Unfortunately, you are not eligible to proceed at this time. While you have sufficient units for both the YMA01 and YPM01 qualifications, these two qualifications cannot be cashed in during the same exam series."
-      });
-      return;
-    }
-
-    // Check if eligible for both YMA01 and YFM01
-    if (canGetYMA01 && isEligibleForYFM01) {
-      setResult({
-        eligible: true,
-        message: "You are eligible for both IAL Mathematics (YMA01) and IAL Further Mathematics (YFM01) qualifications!"
       });
       return;
     }
