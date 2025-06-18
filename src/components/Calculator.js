@@ -296,7 +296,7 @@ function Calculator({
 
     // For XFM01 (IAS Further Mathematics)
     // Must have FP1 plus two additional units (can be further pure or applied)
-    const totalUnitsForXFM01 = (selectedFurtherPureUnits.length - 1) + appliedUnits.length; // -1 because we don't count FP1 twice
+    const totalUnitsForXFM01 = selectedFurtherPureUnits.length + appliedUnits.length - 1; // -1 because we don't count FP1 twice
     const isEligibleForXFM01 = hasFP1 && totalUnitsForXFM01 >= 2;
     
     // Check for valid applied pairs for IAL
@@ -316,6 +316,15 @@ function Calculator({
     
     // Check if student can get YMA01 (P1-P4 + valid applied pair)
     const canGetYMA01 = hasPureComplete && hasValidPair;
+
+    // Check if eligible for both XFM01 and YFM01
+    if (isEligibleForXFM01 && isEligibleForYFM01) {
+      setResult({
+        eligible: true,
+        message: "You are eligible for both IAS Further Mathematics (XFM01) and IAL Further Mathematics (YFM01) qualifications!"
+      });
+      return;
+    }
 
     // Check if eligible for both YMA01 and XMA01
     if (hasPureComplete && appliedUnits.length >= 1) {
