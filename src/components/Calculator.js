@@ -3,6 +3,15 @@ import ReactGA from 'react-ga4';
 import { units } from '../data/units';
 import SelectedUnitsPanel from './SelectedUnitsPanel';
 
+// Calculator component: Main React component for the IAL Maths Eligibility Calculator UI and logic.
+// Props:
+// - selectedUnits: array of currently selected unit codes
+// - setSelectedUnits: function to update selected units
+// - result: eligibility result object
+// - setResult: function to update eligibility result
+// - expandStates: object tracking which unit panels are expanded
+// - setExpandStates: function to update expandStates
+// - onStartOver: function to reset the calculator
 function Calculator({ 
   selectedUnits, 
   setSelectedUnits, 
@@ -12,10 +21,15 @@ function Calculator({
   setExpandStates,
   onStartOver
 }) {
+  // --- State Hooks ---
+  // qualificationMode: 'standard' for single qualification, 'dual' for dual mode
   const [qualificationMode, setQualificationMode] = useState('standard'); // 'standard' or 'dual'
+  // selectedQualification: tracks which additional qualification option is selected
   const [selectedQualification, setSelectedQualification] = useState('ial+ias');
+  // showQualOptions: controls visibility of the additional qualification options panel
   const [showQualOptions, setShowQualOptions] = useState(false);
   
+  // toggleExpand: Expands or collapses a unit section (Pure, Further, Applied) and tracks the event in Google Analytics.
   const toggleExpand = (section) => {
     // Track section expansion/collapse
     ReactGA.event({
@@ -30,6 +44,7 @@ function Calculator({
     });
   };
 
+  // toggleUnit: Adds or removes a unit from the selectedUnits array and tracks the event in Google Analytics.
   const toggleUnit = (unitCode) => {
     // Track unit selection/deselection
     ReactGA.event({
@@ -45,6 +60,7 @@ function Calculator({
     }
   };
 
+  // checkIALEligibility: Main entry point for eligibility checking. Tracks the event, validates input, and delegates to standard or dual mode logic.
   const checkIALEligibility = () => {
     try {
       // Track the eligibility check event
@@ -82,6 +98,8 @@ function Calculator({
     }
   };
 
+  // checkStandardEligibility: Handles eligibility logic for standard (single qualification) mode.
+  // Contains logic for all single-qualification awards and provides detailed feedback for missing requirements.
   const checkStandardEligibility = () => {
     // Define constant arrays at the top
     const pureUnits = ["P1", "P2", "P3", "P4"];
@@ -124,12 +142,29 @@ function Calculator({
       return;
     }
 
-    // Check for YPM01 eligibility (P1-P4 and at least one FP unit)
-    if (hasPureComplete && selectedFurtherPureUnits.length >= 1) {
+    // Check for YPM01 eligibility (P1-P4, FP1, and FP2 or FP3)
+    const hasFP2 = selectedUnits.includes("FP2");
+    const hasFP3 = selectedUnits.includes("FP3");
+    const hasYPM01 = hasPureComplete && selectedUnits.includes("FP1") && (hasFP2 || hasFP3);
+    // Check for XPM01 eligibility (P1-P4 and FP1 only)
+    const hasXPM01 = hasPureComplete && selectedUnits.includes("FP1") && !hasFP2 && !hasFP3;
+
+    // Check YPM01 eligibility first
+    if (hasYPM01) {
       setResult({
         eligible: true,
         message: "You are eligible for the IAL Pure Mathematics qualification (YPM01)!",
         qualification: "IAL Pure Mathematics (YPM01)"
+      });
+      return;
+    }
+
+    // Check XPM01 eligibility
+    if (hasXPM01) {
+      setResult({
+        eligible: true,
+        message: "You are eligible for the IAS Pure Mathematics qualification (XPM01)!",
+        qualification: "IAS Pure Mathematics (XPM01)"
       });
       return;
     }
@@ -148,37 +183,6 @@ function Calculator({
       });
       return;
     }
-
-    // Check for XPM01 eligibility (P1, P2, and FP1)
-    if (hasP1P2 && hasFP1 && !hasPureComplete) {
-      setResult({
-        eligible: true,
-        message: "You are eligible for the IAS Pure Mathematics qualification (XPM01)!",
-        qualification: "IAS Pure Mathematics (XPM01)"
-      });
-      return;
-    }
-
-    // If they have FP1 but not enough units, give specific guidance
-    if (hasFP1) {
-      if (hasTwoFP) {
-        const appliedUnitsNeeded = 4 - totalAppliedUnits;
-        setResult({
-          eligible: false,
-          message: `You have two Further Pure units but need ${appliedUnitsNeeded} more applied unit${appliedUnitsNeeded > 1 ? 's' : ''} to be eligible for IAL Further Mathematics (YFM01).`
-        });
-      } else {
-        const unitsNeeded = 2 - totalUnitsForXFM01;
-        setResult({
-          eligible: false,
-          message: `You have FP1 but need ${unitsNeeded} more unit${unitsNeeded > 1 ? 's' : ''} (either Further Pure or Applied) to be eligible for IAS Further Mathematics (XFM01).`
-        });
-      }
-      return;
-    }
-
-    // Only check Pure Mathematics requirements if not eligible for Further Mathematics
-    const selectedPureUnits = pureUnits.filter(unit => selectedUnits.includes(unit));
 
     // Check for valid applied pairs for IAL
     const validPairs = [
@@ -206,13 +210,13 @@ function Calculator({
       let message = "Missing one or more required Pure Mathematics units (P1-P4)";
       
       // If they have some pure units, be more specific
-      if (selectedPureUnits.length > 0) {
+      if (pureUnits.filter(unit => selectedUnits.includes(unit)).length > 0) {
         const missingUnits = pureUnits.filter(unit => !selectedUnits.includes(unit));
         message = `Missing ${missingUnits.join(", ")} from the required Pure Mathematics units`;
       }
       
       // Add recommendations if they're close to IAS
-      if (selectedPureUnits.length >= 1) {
+      if (pureUnits.filter(unit => selectedUnits.includes(unit)).length >= 1) {
         const neededForIAS = [];
         if (!selectedUnits.includes("P1")) neededForIAS.push("P1");
         if (!selectedUnits.includes("P2")) neededForIAS.push("P2");
@@ -259,7 +263,69 @@ function Calculator({
     });
   };
 
+  // checkDualEligibility: Handles eligibility logic for dual mode (multiple awards).
+  // Contains custom checks for specific dual combinations, then falls back to rule-based logic for all other cases.
   const checkDualEligibility = () => {
+    // --- Custom XMA01 & XFM01 message for specific 6-unit combinations ---
+    if (selectedUnits.length === 6) {
+      const xma01_xfm01_combinations = [
+        ["P1", "P2", "M1", "FP1", "FP2", "FP3"], ["P1", "P2", "M1", "FP1", "FP2", "M2"], ["P1", "P2", "M1", "FP1", "FP2", "M3"], ["P1", "P2", "M1", "FP1", "FP2", "S1"], ["P1", "P2", "M1", "FP1", "FP2", "S2"], ["P1", "P2", "M1", "FP1", "FP2", "S3"], ["P1", "P2", "M1", "FP1", "FP2", "D1"], ["P1", "P2", "M1", "FP1", "FP3", "M2"], ["P1", "P2", "M1", "FP1", "FP3", "M3"], ["P1", "P2", "M1", "FP1", "FP3", "S1"], ["P1", "P2", "M1", "FP1", "FP3", "S2"], ["P1", "P2", "M1", "FP1", "FP3", "S3"], ["P1", "P2", "M1", "FP1", "FP3", "D1"], ["P1", "P2", "S1", "FP1", "FP2", "FP3"], ["P1", "P2", "S1", "FP1", "FP2", "M1"], ["P1", "P2", "S1", "FP1", "FP2", "M2"], ["P1", "P2", "S1", "FP1", "FP2", "M3"], ["P1", "P2", "S1", "FP1", "FP2", "S2"], ["P1", "P2", "S1", "FP1", "FP2", "S3"], ["P1", "P2", "S1", "FP1", "FP2", "D1"], ["P1", "P2", "S1", "FP1", "FP3", "M1"], ["P1", "P2", "S1", "FP1", "FP3", "M2"], ["P1", "P2", "S1", "FP1", "FP3", "M3"], ["P1", "P2", "S1", "FP1", "FP3", "S2"], ["P1", "P2", "S1", "FP1", "FP3", "S3"], ["P1", "P2", "S1", "FP1", "FP3", "D1"], ["P1", "P2", "D1", "FP1", "FP2", "FP3"], ["P1", "P2", "D1", "FP1", "FP2", "M1"], ["P1", "P2", "D1", "FP1", "FP2", "M2"], ["P1", "P2", "D1", "FP1", "FP2", "M3"], ["P1", "P2", "D1", "FP1", "FP2", "S1"], ["P1", "P2", "D1", "FP1", "FP2", "S2"], ["P1", "P2", "D1", "FP1", "FP2", "S3"], ["P1", "P2", "D1", "FP1", "FP3", "M1"], ["P1", "P2", "D1", "FP1", "FP3", "M2"], ["P1", "P2", "D1", "FP1", "FP3", "M3"], ["P1", "P2", "D1", "FP1", "FP3", "S1"], ["P1", "P2", "D1", "FP1", "FP3", "S2"], ["P1", "P2", "D1", "FP1", "FP3", "S3"]
+      ];
+      const sortedSelected = [...selectedUnits].sort();
+      for (const combo of xma01_xfm01_combinations) {
+        if (combo.slice().sort().every((unit, idx) => unit === sortedSelected[idx])) {
+          setResult({ eligible: true, message: "You are eligible for the XMA01 & XFM01!" });
+          return;
+        }
+      }
+    }
+
+    // --- Custom YMA01 & YFM01 message for specific 12-unit combinations ---
+    if (selectedUnits.length === 12) {
+      const yma01_yfm01_combinations = [
+        ["P1", "P2", "P3", "P4", "M1", "S1", "FP1", "FP2", "FP3", "S2", "S3", "D1"],
+        ["P1", "P2", "P3", "P4", "M1", "S1", "FP1", "FP2", "FP3", "D1", "M2", "M3"],
+        ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP2", "M2", "M3", "S1", "S2"],
+        ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP2", "M2", "M3", "S1", "S3"],
+        ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP2", "M3", "S1", "S2", "S3"],
+        ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP3", "M2", "M3", "S1", "S2"],
+        ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP3", "M2", "M3", "S1", "S3"],
+        ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP3", "M3", "S1", "S2", "S3"],
+        ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP2", "FP3", "M2", "M3", "S1"],
+        ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP2", "FP3", "M3", "S1", "S2"],
+        ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP2", "FP3", "S1", "S2", "S3"],
+        ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP2", "M3", "S1", "S2", "S3"],
+        ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP2", "M3", "S1", "S2", "D1"],
+        ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP2", "S1", "S2", "S3", "D1"],
+        ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP3", "M3", "S1", "S2", "S3"],
+        ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP3", "M3", "S1", "S2", "D1"],
+        ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP3", "S1", "S2", "S3", "D1"],
+        ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP2", "FP3", "M3", "S1", "S2"],
+        ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP2", "FP3", "S1", "S2", "S3"],
+        ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP2", "FP3", "S2", "S3", "D1"],
+        ["P1", "P2", "P3", "P4", "S1", "D1", "FP1", "FP2", "M1", "M2", "M3", "S2"],
+        ["P1", "P2", "P3", "P4", "S1", "D1", "FP1", "FP2", "M1", "M2", "M3", "S3"],
+        ["P1", "P2", "P3", "P4", "S1", "D1", "FP1", "FP3", "M1", "M2", "M3", "S2"],
+        ["P1", "P2", "P3", "P4", "S1", "D1", "FP1", "FP3", "M1", "M2", "M3", "S3"],
+        ["P1", "P2", "P3", "P4", "S1", "D1", "FP1", "FP2", "FP3", "M1", "M2", "M3"],
+        ["P1", "P2", "P3", "P4", "S1", "S2", "FP1", "FP2", "M1", "M2", "M3", "S3"],
+        ["P1", "P2", "P3", "P4", "S1", "S2", "FP1", "FP2", "M1", "M2", "M3", "D1"],
+        ["P1", "P2", "P3", "P4", "S1", "S2", "FP1", "FP3", "M1", "M2", "M3", "S3"],
+        ["P1", "P2", "P3", "P4", "S1", "S2", "FP1", "FP3", "M1", "M2", "M3", "D1"],
+        ["P1", "P2", "P3", "P4", "S1", "S2", "FP1", "FP2", "FP3", "M1", "M2", "M3"],
+        ["P1", "P2", "P3", "P4", "S1", "S2", "FP1", "FP2", "FP3", "S3", "D1", "M1"],
+        ["P1", "P2", "P3", "P4", "S1", "S2", "FP1", "FP2", "FP3", "D1", "M1", "M2"],
+        ["P1", "P2", "P3", "P4", "S1", "S2", "FP1", "FP2", "FP3", "D1", "M2", "M3"]
+      ];
+      const sortedSelected = [...selectedUnits].sort();
+      for (const combo of yma01_yfm01_combinations) {
+        if (combo.slice().sort().every((unit, idx) => unit === sortedSelected[idx])) {
+          setResult({ eligible: true, message: "You are eligible for the YMA01 & YFM01!" });
+          return;
+        }
+      }
+    }
+
     // Define constant arrays at the top
     const pureUnits = ["P1", "P2", "P3", "P4"];
     const furtherPureUnits = ["FP1", "FP2", "FP3"];
@@ -472,110 +538,17 @@ function Calculator({
       return;
     }
 
-    // --- Custom XMA01 & XFM01 message for specific 6-unit combinations ---
-    const xma01_xfm01_combinations = [
-      // P1, P2, M1, FP1, FP2, and one of:
-      ["P1", "P2", "M1", "FP1", "FP2", "FP3"],
-      ["P1", "P2", "M1", "FP1", "FP2", "M2"],
-      ["P1", "P2", "M1", "FP1", "FP2", "M3"],
-      ["P1", "P2", "M1", "FP1", "FP2", "S1"],
-      ["P1", "P2", "M1", "FP1", "FP2", "S2"],
-      ["P1", "P2", "M1", "FP1", "FP2", "S3"],
-      ["P1", "P2", "M1", "FP1", "FP2", "D1"],
-      ["P1", "P2", "M1", "FP1", "FP3", "M2"],
-      ["P1", "P2", "M1", "FP1", "FP3", "M3"],
-      ["P1", "P2", "M1", "FP1", "FP3", "S1"],
-      ["P1", "P2", "M1", "FP1", "FP3", "S2"],
-      ["P1", "P2", "M1", "FP1", "FP3", "S3"],
-      ["P1", "P2", "M1", "FP1", "FP3", "D1"],
-      // P1, P2, S1, FP1, FP2, and one of:
-      ["P1", "P2", "S1", "FP1", "FP2", "FP3"],
-      ["P1", "P2", "S1", "FP1", "FP2", "M1"],
-      ["P1", "P2", "S1", "FP1", "FP2", "M2"],
-      ["P1", "P2", "S1", "FP1", "FP2", "M3"],
-      ["P1", "P2", "S1", "FP1", "FP2", "S2"],
-      ["P1", "P2", "S1", "FP1", "FP2", "S3"],
-      ["P1", "P2", "S1", "FP1", "FP2", "D1"],
-      ["P1", "P2", "S1", "FP1", "FP3", "M1"],
-      ["P1", "P2", "S1", "FP1", "FP3", "M2"],
-      ["P1", "P2", "S1", "FP1", "FP3", "M3"],
-      ["P1", "P2", "S1", "FP1", "FP3", "S2"],
-      ["P1", "P2", "S1", "FP1", "FP3", "S3"],
-      ["P1", "P2", "S1", "FP1", "FP3", "D1"],
-      // P1, P2, D1, FP1, FP2, and one of:
-      ["P1", "P2", "D1", "FP1", "FP2", "FP3"],
-      ["P1", "P2", "D1", "FP1", "FP2", "M1"],
-      ["P1", "P2", "D1", "FP1", "FP2", "M2"],
-      ["P1", "P2", "D1", "FP1", "FP2", "M3"],
-      ["P1", "P2", "D1", "FP1", "FP2", "S1"],
-      ["P1", "P2", "D1", "FP1", "FP2", "S2"],
-      ["P1", "P2", "D1", "FP1", "FP2", "S3"],
-      ["P1", "P2", "D1", "FP1", "FP3", "M1"],
-      ["P1", "P2", "D1", "FP1", "FP3", "M2"],
-      ["P1", "P2", "D1", "FP1", "FP3", "M3"],
-      ["P1", "P2", "D1", "FP1", "FP3", "S1"],
-      ["P1", "P2", "D1", "FP1", "FP3", "S2"],
-      ["P1", "P2", "D1", "FP1", "FP3", "S3"],
-    ];
-    if (selectedUnits.length === 6) {
-      const sortedSelected = [...selectedUnits].sort();
-      for (const combo of xma01_xfm01_combinations) {
-        if (combo.slice().sort().every((unit, idx) => unit === sortedSelected[idx])) {
-          setResult({
-            eligible: true,
-            message: "You are eligible for the XMA01 & XFM01!"
-          });
-          return;
-        }
-      }
-    }
-    // --- Custom YMA01 & YFM01 message for specific 12-unit combinations ---
-    const yma01_yfm01_combinations = [
-      ["P1", "P2", "P3", "P4", "M1", "S1", "FP1", "FP2", "FP3", "S2", "S3", "D1"],
-      ["P1", "P2", "P3", "P4", "M1", "S1", "FP1", "FP2", "FP3", "D1", "M2", "M3"],
-      ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP2", "M2", "M3", "S1", "S2"],
-      ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP2", "M2", "M3", "S1", "S3"],
-      ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP2", "M3", "S1", "S2", "S3"],
-      ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP3", "M2", "M3", "S1", "S2"],
-      ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP3", "M2", "M3", "S1", "S3"],
-      ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP3", "M3", "S1", "S2", "S3"],
-      ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP2", "FP3", "M2", "M3", "S1"],
-      ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP2", "FP3", "M3", "S1", "S2"],
-      ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP2", "FP3", "S1", "S2", "S3"],
-      ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP2", "M3", "S1", "S2", "S3"],
-      ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP2", "M3", "S1", "S2", "D1"],
-      ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP2", "S1", "S2", "S3", "D1"],
-      ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP3", "M3", "S1", "S2", "S3"],
-      ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP3", "M3", "S1", "S2", "D1"],
-      ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP3", "S1", "S2", "S3", "D1"],
-      ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP2", "FP3", "M3", "S1", "S2"],
-      ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP2", "FP3", "S1", "S2", "S3"],
-      ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP2", "FP3", "S2", "S3", "D1"],
-      ["P1", "P2", "P3", "P4", "S1", "D1", "FP1", "FP2", "M1", "M2", "M3", "S2"],
-      ["P1", "P2", "P3", "P4", "S1", "D1", "FP1", "FP2", "M1", "M2", "M3", "S3"],
-      ["P1", "P2", "P3", "P4", "S1", "D1", "FP1", "FP3", "M1", "M2", "M3", "S2"],
-      ["P1", "P2", "P3", "P4", "S1", "D1", "FP1", "FP3", "M1", "M2", "M3", "S3"],
-      ["P1", "P2", "P3", "P4", "S1", "D1", "FP1", "FP2", "FP3", "M1", "M2", "M3"],
-      ["P1", "P2", "P3", "P4", "S1", "S2", "FP1", "FP2", "M1", "M2", "M3", "S3"],
-      ["P1", "P2", "P3", "P4", "S1", "S2", "FP1", "FP2", "M1", "M2", "M3", "D1"],
-      ["P1", "P2", "P3", "P4", "S1", "S2", "FP1", "FP3", "M1", "M2", "M3", "S3"],
-      ["P1", "P2", "P3", "P4", "S1", "S2", "FP1", "FP3", "M1", "M2", "M3", "D1"],
-      ["P1", "P2", "P3", "P4", "S1", "S2", "FP1", "FP2", "FP3", "M1", "M2", "M3"],
-      ["P1", "P2", "P3", "P4", "S1", "S2", "FP1", "FP2", "FP3", "S3", "D1", "M1"],
-      ["P1", "P2", "P3", "P4", "S1", "S2", "FP1", "FP2", "FP3", "D1", "M1", "M2"],
-      ["P1", "P2", "P3", "P4", "S1", "S2", "FP1", "FP2", "FP3", "D1", "M2", "M3"],
-    ];
-    if (selectedUnits.length === 12) {
-      const sortedSelected = [...selectedUnits].sort();
-      for (const combo of yma01_yfm01_combinations) {
-        if (combo.slice().sort().every((unit, idx) => unit === sortedSelected[idx])) {
-          setResult({
-            eligible: true,
-            message: "You are eligible for the YMA01 & YFM01!"
-          });
-          return;
-        }
-      }
+    // --- Rule-based check for YMA01 & YFM01 in dual mode ---
+    // YMA01: P1-P4 and a valid applied pair
+    // YFM01: (FP1, FP2, FP3) + 3 applied OR any 2 FP + 4 applied
+    const hasAllPure = pureUnits.every(unit => selectedUnits.includes(unit));
+    const appliedCount = allAppliedUnits.filter(unit => selectedUnits.includes(unit)).length;
+    const fpCount = furtherPureUnits.filter(unit => selectedUnits.includes(unit)).length;
+    const hasYFM01 = (hasAllFP && appliedCount >= 3) || (hasTwoFP && appliedCount >= 4);
+    const hasYMA01 = hasAllPure && validPairs.some(pair => pair.every(unit => selectedUnits.includes(unit)));
+    if (hasYMA01 && hasYFM01 && selectedUnits.length === 12) {
+      setResult({ eligible: true, message: "You are eligible for the YMA01 & YFM01!" });
+      return;
     }
 
     setResult({
@@ -583,6 +556,11 @@ function Calculator({
       message: "You are eligible for the IAL Mathematics qualification (YMA01)!"
     });
   };
+
+  // --- UI Rendering Functions ---
+  // These functions render different sections of the calculator UI, such as the mode selector,
+  // information banner, qualification selector, unit selection panels, additional resources, and start over button.
+  // Each function returns a JSX block for its respective UI section.
 
   const renderModeSelector = () => (
     <div className="mb-6">
@@ -880,4 +858,9 @@ function Calculator({
   );
 }
 
-export default Calculator; 
+export default Calculator;
+
+// --- End of Calculator component ---
+// This component manages all state, logic, and UI for the IAL Maths Eligibility Calculator.
+// It is designed to be maintainable and clear for future developers, with detailed comments throughout.
+// All eligibility logic and UI rendering is self-contained in this file. 
