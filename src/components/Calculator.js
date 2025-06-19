@@ -472,9 +472,49 @@ function Calculator({
       return;
     }
 
+    // --- Custom XMA01 & XFM01 message for specific 6-unit combinations ---
+    const xma01_xfm01_combinations = [
+      // P1, P2, M1, FP1, FP2, and one of:
+      ["P1", "P2", "M1", "FP1", "FP2", "FP3"],
+      ["P1", "P2", "M1", "FP1", "FP2", "M2"],
+      ["P1", "P2", "M1", "FP1", "FP2", "M3"],
+      ["P1", "P2", "M1", "FP1", "FP2", "S1"],
+      ["P1", "P2", "M1", "FP1", "FP2", "S2"],
+      ["P1", "P2", "M1", "FP1", "FP2", "S3"],
+      ["P1", "P2", "M1", "FP1", "FP2", "D1"],
+      // P1, P2, S1, FP1, FP2, and one of:
+      ["P1", "P2", "S1", "FP1", "FP2", "FP3"],
+      ["P1", "P2", "S1", "FP1", "FP2", "M1"],
+      ["P1", "P2", "S1", "FP1", "FP2", "M2"],
+      ["P1", "P2", "S1", "FP1", "FP2", "M3"],
+      ["P1", "P2", "S1", "FP1", "FP2", "S2"],
+      ["P1", "P2", "S1", "FP1", "FP2", "S3"],
+      ["P1", "P2", "S1", "FP1", "FP2", "D1"],
+      // P1, P2, D1, FP1, FP2, and one of:
+      ["P1", "P2", "D1", "FP1", "FP2", "FP3"],
+      ["P1", "P2", "D1", "FP1", "FP2", "M1"],
+      ["P1", "P2", "D1", "FP1", "FP2", "M2"],
+      ["P1", "P2", "D1", "FP1", "FP2", "M3"],
+      ["P1", "P2", "D1", "FP1", "FP2", "S1"],
+      ["P1", "P2", "D1", "FP1", "FP2", "S2"],
+      ["P1", "P2", "D1", "FP1", "FP2", "S3"],
+    ];
+    if (selectedUnits.length === 6) {
+      const sortedSelected = [...selectedUnits].sort();
+      for (const combo of xma01_xfm01_combinations) {
+        if (combo.slice().sort().every((unit, idx) => unit === sortedSelected[idx])) {
+          setResult({
+            eligible: true,
+            message: "You are eligible for the XMA01 & XFM01!"
+          });
+          return;
+        }
+      }
+    }
+
     setResult({
       eligible: true,
-      message: "You are eligible for both IAL Mathematics (YMA01) and IAS Further Mathematics (XFM01) qualifications!"
+      message: "You are eligible for the IAL Mathematics qualification (YMA01)!"
     });
   };
 
