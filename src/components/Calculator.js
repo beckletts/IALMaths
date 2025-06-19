@@ -529,6 +529,54 @@ function Calculator({
         }
       }
     }
+    // --- Custom YMA01 & YFM01 message for specific 12-unit combinations ---
+    const yma01_yfm01_combinations = [
+      ["P1", "P2", "P3", "P4", "M1", "S1", "FP1", "FP2", "FP3", "S2", "S3", "D1"],
+      ["P1", "P2", "P3", "P4", "M1", "S1", "FP1", "FP2", "FP3", "D1", "M2", "M3"],
+      ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP2", "M2", "M3", "S1", "S2"],
+      ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP2", "M2", "M3", "S1", "S3"],
+      ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP2", "M3", "S1", "S2", "S3"],
+      ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP3", "M2", "M3", "S1", "S2"],
+      ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP3", "M2", "M3", "S1", "S3"],
+      ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP3", "M3", "S1", "S2", "S3"],
+      ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP2", "FP3", "M2", "M3", "S1"],
+      ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP2", "FP3", "M3", "S1", "S2"],
+      ["P1", "P2", "P3", "P4", "M1", "D1", "FP1", "FP2", "FP3", "S1", "S2", "S3"],
+      ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP2", "M3", "S1", "S2", "S3"],
+      ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP2", "M3", "S1", "S2", "D1"],
+      ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP2", "S1", "S2", "S3", "D1"],
+      ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP3", "M3", "S1", "S2", "S3"],
+      ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP3", "M3", "S1", "S2", "D1"],
+      ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP3", "S1", "S2", "S3", "D1"],
+      ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP2", "FP3", "M3", "S1", "S2"],
+      ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP2", "FP3", "S1", "S2", "S3"],
+      ["P1", "P2", "P3", "P4", "M1", "M2", "FP1", "FP2", "FP3", "S2", "S3", "D1"],
+      ["P1", "P2", "P3", "P4", "S1", "D1", "FP1", "FP2", "M1", "M2", "M3", "S2"],
+      ["P1", "P2", "P3", "P4", "S1", "D1", "FP1", "FP2", "M1", "M2", "M3", "S3"],
+      ["P1", "P2", "P3", "P4", "S1", "D1", "FP1", "FP3", "M1", "M2", "M3", "S2"],
+      ["P1", "P2", "P3", "P4", "S1", "D1", "FP1", "FP3", "M1", "M2", "M3", "S3"],
+      ["P1", "P2", "P3", "P4", "S1", "D1", "FP1", "FP2", "FP3", "M1", "M2", "M3"],
+      ["P1", "P2", "P3", "P4", "S1", "S2", "FP1", "FP2", "M1", "M2", "M3", "S3"],
+      ["P1", "P2", "P3", "P4", "S1", "S2", "FP1", "FP2", "M1", "M2", "M3", "D1"],
+      ["P1", "P2", "P3", "P4", "S1", "S2", "FP1", "FP3", "M1", "M2", "M3", "S3"],
+      ["P1", "P2", "P3", "P4", "S1", "S2", "FP1", "FP3", "M1", "M2", "M3", "D1"],
+      ["P1", "P2", "P3", "P4", "S1", "S2", "FP1", "FP2", "FP3", "M1", "M2", "M3"],
+      ["P1", "P2", "P3", "P4", "S1", "S2", "FP1", "FP2", "FP3", "S3", "D1", "M1"],
+      ["P1", "P2", "P3", "P4", "S1", "S2", "FP1", "FP2", "FP3", "D1", "M1", "M2"],
+      ["P1", "P2", "P3", "P4", "S1", "S2", "FP1", "FP2", "FP3", "D1", "M2", "M3"],
+    ];
+    if (selectedUnits.length === 12) {
+      const sortedSelected = [...selectedUnits].sort();
+      for (const combo of yma01_yfm01_combinations) {
+        if (combo.slice().sort().every((unit, idx) => unit === sortedSelected[idx])) {
+          setResult({
+            eligible: true,
+            message: "You are eligible for the YMA01 & YFM01!"
+          });
+          return;
+        }
+      }
+    }
 
     setResult({
       eligible: true,
