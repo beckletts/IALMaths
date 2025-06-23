@@ -378,7 +378,10 @@ function Calculator({
     const isEligibleForXMA01 = hasP1P2 && appliedUnits.length >= 1;
     
     // Check if eligible for Pure Mathematics (YPM01)
-    const isEligibleForYPM01 = hasPureComplete && selectedFurtherPureUnits.length >= 1;
+    // Must have P1, P2, P3, P4, FP1, and (FP2 or FP3)
+    const hasFP2 = selectedUnits.includes("FP2");
+    const hasFP3 = selectedUnits.includes("FP3");
+    const isEligibleForYPM01 = hasPureComplete && selectedUnits.includes("FP1") && (hasFP2 || hasFP3);
     
     // Check if student can get YMA01 (P1-P4 + valid applied pair)
     const canGetYMA01 = hasPureComplete && hasValidPair;
@@ -438,7 +441,7 @@ function Calculator({
     }
 
     // Check if eligible for YPM01 alone
-    if (isEligibleForYPM01) {
+    if (isEligibleForYPM01 && selectedUnits.length >= 6) {
       setResult({
         eligible: true,
         message: "You are eligible for the IAL Pure Mathematics qualification (YPM01)!",
@@ -551,9 +554,10 @@ function Calculator({
       return;
     }
 
+    // If no qualification is met, show a clear ineligible message
     setResult({
-      eligible: true,
-      message: "You are eligible for the IAL Mathematics qualification (YMA01)!"
+      eligible: false,
+      message: "You are not eligible for any IAL Mathematics qualification with the selected units. Please review the requirements for each qualification and ensure you have the correct combination of Pure, Further Pure, and Applied Mathematics units. If you need help, consult the official Pearson guidance or your examination officer."
     });
   };
 
